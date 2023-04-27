@@ -108,7 +108,7 @@ export async function verify_email_route(req: Request, env: Env) {
 
 
 	// generate a hash of the email address, data, form url, and secret signature
-	const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(to + JSON.stringify(form_json) + form_url + env.SECRET_SIGNATURE));
+	const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(form_json) + form_url + env.SECRET_SIGNATURE));
 
 	// convert the hash to a string
 	const hash_string = Array.from(new Uint8Array(hash))
