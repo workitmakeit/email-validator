@@ -6,6 +6,7 @@ export interface Env {
 	SECRET_SIGNATURE: string;
 }
 
+// credit: Guido Zuidhof https://dev.to/gzuidhof/sending-e-mails-from-cloudflare-workers-2abl
 export interface EmailData {
 	from: string;
 	to: string;
