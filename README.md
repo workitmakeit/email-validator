@@ -24,6 +24,15 @@ FORM_KEYS_TO_URLS_JSON: A stringified JSON object mapping form "keys" to the for
 SECRET_SIGNATURE: A long, random string used in hashing to verify submissions (note: hashtags may truncate the string in dev vars)
 ```
 
+Example values (.dev.vars format):
+```ini
+FROM_ADDRESS= "Mail Validator <email@email.tld>"
+MAILGUN_API_KEY = "apikey123"
+MAILGUN_API_BASE_URL = "https://api.mailgun.net/v3/mail.example.com"
+FORM_KEYS_TO_URLS_JSON = {"my form name": "https://example.com/form"}
+SECRET_SIGNATURE = superlongrandomstring
+```
+
 4. Deploy the worker using `wrangler publish` or the Cloudflare Dashboard.
 
 5. Create an HTML form, using the worker's verify-email route as the action address.
@@ -37,10 +46,10 @@ Example HTML form:
 
   <button type="submit">Submit</button>
 
-  <input name="EmailFieldName" value="Email" type="hidden">
-  <input name="FormKey" value="my form name" type="hidden">
-  <input name="VerifyRedirectTo" value="https://example.com" type="hidden"> <!-- optional -->
-  <input name="SubmitRedirectTo" value="https://example.com" type="hidden"> <!-- optional -->
+  <input name="EmailFieldName" value="Email" type="hidden"> <!-- set the value to the name of the email field -->
+  <input name="FormKey" value="my form name" type="hidden"> <!-- set the value to the key for the intended form in FORM_KEYS_TO_URLS_JSON -->
+  <input name="VerifyRedirectTo" value="https://example.com" type="hidden"> <!-- optional, set the value to where to redirect after going to /verify-email -->
+  <input name="SubmitRedirectTo" value="https://example.com" type="hidden"> <!-- optional, set the value to where to redirect after going to /submit-form -->
 </form>
 ```
 
