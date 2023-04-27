@@ -4,7 +4,7 @@ Sits as middleware before a form submission to validate the email address.
 
 You can use a service such as Formspree for getting form submissions, but you can't validate the email address before submitting the form. This worker sits in front of the form submission and validates the email address before submitting the form.
 
-Set up the secret variables, using Cloudflare Dashboard, `wrangler secret put`, or .dev.vars file:
+Set up the secret (or environment) variables, using Cloudflare Dashboard, `wrangler secret put`, or .dev.vars file:
 
 ```
 FROM_ADDRESS: The email address to send from (must match Mailgun domain, can have a name, e.g. "My Name <email@email.tld>" or just the email address)
