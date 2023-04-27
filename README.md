@@ -53,4 +53,4 @@ Example HTML form:
 </form>
 ```
 
-6. Profit!
+6. Profit! (and optionally create Worker Routes to the worker for /verify-email and /submit-form)
