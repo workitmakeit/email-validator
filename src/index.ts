@@ -38,7 +38,6 @@ export function send_mail(env: Env, data: EmailData) {
 		body: dataUrlEncoded,
 	}
 
-	console.log(opts);
 	return fetch(`${env.MAILGUN_API_BASE_URL}/messages`, opts);
 }
 

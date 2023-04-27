@@ -11,7 +11,7 @@ FROM_ADDRESS: The email address to send from (must match Mailgun domain, can hav
 MAILGUN_API_KEY: The API key for Mailgun
 MAILGUN_API_BASE_URL: The base URL for the Mailgun API (not including the any path after or a trailing slash, e.g. `https://api.mailgun.net/v3/DOMAIN_HERE`)
 FORM_KEYS_TO_URLS_JSON: A stringified JSON object mapping form "keys" to the form URL (to obscure the form URL from the client)
-SECRET_SIGNATURE: A long, random string used in hashing to verify submissions
+SECRET_SIGNATURE: A long, random string used in hashing to verify submissions (note: hashtags may truncate the string in dev vars)
 ```
 
 Note: this doesn't filter spam. make sure to ratelimit properly and filter submissions on the server side.
