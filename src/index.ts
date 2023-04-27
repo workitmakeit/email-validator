@@ -121,18 +121,8 @@ export async function verify_email_route(req: Request, env: Env) {
 	const submit_url = new URL(req.url);
 	submit_url.pathname = "/submit-form";
 
-	submit_url.searchParams.set("email", to);
 	submit_url.searchParams.set("data", JSON.stringify(form_json));
 	submit_url.searchParams.set("hash", hash_string);
-	submit_url.searchParams.set("form_key", form_key);
-
-	// check if form has submit redirect url
-	const submit_redirect_url = form_data.get("SubmitRedirectTo");
-
-	if (submit_redirect_url) {
-		submit_url.searchParams.set("redirect_to", submit_redirect_url);
-	}
-
 
 	// send the email
 	const res = await send_mail(env, {
@@ -180,13 +170,6 @@ export async function submit_form_route(req: Request, env: Env) {
 	const url = new URL(req.url);
 	const params = url.searchParams;
 
-	// get the email address from the url
-	const to = params.get("email");
-
-	if (!to) {
-		return new Response("No email address specified", { status: 400 });
-	}
-
 	// get the data from the url
 	const data = params.get("data");
 
@@ -200,14 +183,6 @@ export async function submit_form_route(req: Request, env: Env) {
 	if (!provided_hash_string) {
 		return new Response("No hash specified", { status: 400 });
 	}
-
-	// get the form key from the url
-	const form_key = params.get("form_key");
-
-	if (!form_key) {
-		return new Response("No form key specified", { status: 400 });
-	}
-
 
 
 	// transform the form data string back to a form data object
@@ -225,6 +200,15 @@ export async function submit_form_route(req: Request, env: Env) {
 		form_data.set(key, data_json[key]);
 	}
 
+
+	// get the form key from the form data
+	const form_key = form_data.get("FormKey");
+
+	if (!form_key) {
+		return new Response("No form key specified", { status: 400 });
+	}
+
+
 	// get the url to the form
 	let form_url: string;
 	try {
@@ -239,8 +223,22 @@ export async function submit_form_route(req: Request, env: Env) {
 	}
 
 
+	// get the email address from the form data
+	const email_field_name = form_data.get("EmailFieldName");
+
+	if (!email_field_name) {
+		return new Response("No email field name specified", { status: 400 });
+	}
+
+	const to = form_data.get(email_field_name);
+
+	if (!to) {
+		return new Response("No email address specified", { status: 400 });
+	}
+
+
 	// generate a hash of the email address, data, form url, and secret signature
-	const hash_check = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(to + data + form_url + env.SECRET_SIGNATURE));
+	const hash_check = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data + form_url + env.SECRET_SIGNATURE));
 
 	// convert the hash to a string
 	const hash_string = Array.from(new Uint8Array(hash_check))
@@ -267,8 +265,8 @@ export async function submit_form_route(req: Request, env: Env) {
 	}
 
 
-	// check if form has submit redirect url
-	const redirect_url = params.get("redirect_to");
+	// check if form data has a redirect url
+	const redirect_url = form_data.get("SubmitRedirectTo");
 
 	if (redirect_url) {
 		// redirect to the redirect url with a 302
