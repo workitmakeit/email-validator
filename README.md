@@ -4,7 +4,7 @@ Sits as middleware before a form submission to validate the email address.
 
 You can use a service such as Formspree for getting form submissions, but you can't validate the email address before submitting the form. This worker sits in front of the form submission and validates the email address before submitting the form.
 
->**Note** This doesn't filter spam. Make sure to ratelimit properly and filter submissions on the server side.
+>**Note** This doesn't filter spam. Make sure to ratelimit properly and filter submissions on the server side. Additionally, this may be used to spam someone's inbox, which may be addressed in the future.
 
 > **Warning** As of right now, links can be reused multiple times. See [#1](https://github.com/obfuscatedgenerated/cf-email-validator-worker/issues/1).
 
