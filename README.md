@@ -19,7 +19,7 @@ Note: this doesn't filter spam. make sure to ratelimit properly and filter submi
 Example HTML form:
 
 ```html
-<form action="(worker url)/send-email" method="post">
+<form action="(worker url)/verify-email" method="post">
   <label for="email">Email address</label>
   <input name="Email" type="email">
 
