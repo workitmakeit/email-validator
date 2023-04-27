@@ -6,6 +6,8 @@ You can use a service such as Formspree for getting form submissions, but you ca
 
 >**Note** This doesn't filter spam. Make sure to ratelimit properly and filter submissions on the server side.
 
+> **Warning** As of right now, links can be reused multiple times. See [#1](https://github.com/obfuscatedgenerated/cf-email-validator-worker/issues/1).
+
 ## Usage
 
 (assuming you've set up Mailgun and your form submission service)
@@ -53,4 +55,4 @@ Example HTML form:
 </form>
 ```
 
-6. Profit! (and optionally create Worker Routes to the worker for /verify-email and /submit-form)
+6. Profit! (and optionally create Worker Routes to the worker for /verify-email and /submit-form*)
