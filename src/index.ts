@@ -278,7 +278,7 @@ export async function submit_form_route(req: Request, env: Env) {
 }
 
 export default {
-	async fetch(req, env, _ctx) {
+	async fetch(req: Request, env: Env, _ctx: ExecutionContext) {
 		// check every field of env is defined
 		if (!env.FROM_ADDRESS || !env.MAILGUN_API_KEY || !env.MAILGUN_API_BASE_URL || !env.FORM_KEYS_TO_URLS_JSON || !env.SECRET_SIGNATURE) {
 			return new Response("Worker not configured", { status: 500 });
