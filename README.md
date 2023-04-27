@@ -56,3 +56,7 @@ Example HTML form:
 ```
 
 6. Profit! (and optionally create Worker Routes to the worker for /verify-email and /submit-form*)
+
+## C4 Diagram
+
+![C4 Diagram](./assets/cf-email-validator-worker.png)
