@@ -26,7 +26,7 @@ SECRET_SIGNATURE: A long, random string used in hashing to verify submissions (n
 
 Example values (.dev.vars format):
 ```ini
-FROM_ADDRESS= "Mail Validator <email@email.tld>"
+FROM_ADDRESS = "Mail Validator <email@mail.example.com>"
 MAILGUN_API_KEY = "apikey123"
 MAILGUN_API_BASE_URL = "https://api.mailgun.net/v3/mail.example.com"
 FORM_KEYS_TO_URLS_JSON = {"my form name": "https://example.com/form"}
