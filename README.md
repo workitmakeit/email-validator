@@ -27,6 +27,7 @@ Example HTML form:
 
   <input name="EmailFieldName" value="Email" type="hidden">
   <input name="FormKey" value="my form name" type="hidden">
-  <input name="RedirectTo" value="https://example.com" type="hidden"> <!-- optional -->
+  <input name="VerifyRedirectTo" value="https://example.com" type="hidden"> <!-- optional -->
+  <input name="SubmitRedirectTo" value="https://example.com" type="hidden"> <!-- optional -->
 </form>
 ```
