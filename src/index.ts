@@ -15,7 +15,6 @@ export interface Env {
 
 	SECRET_SIGNATURE: string;
 
-
 	STORAGE_IMPLEMENTATION: string;
 
 	FORMS: KVNamespace;
@@ -28,6 +27,7 @@ export default {
 	async fetch(req: Request, env: Env, _ctx: ExecutionContext) {
 		// check every field of env is defined
 		if (!env.FROM_ADDRESS || !env.MAILGUN_API_KEY || !env.MAILGUN_API_BASE_URL || !env.SECRET_SIGNATURE || !env.STORAGE_IMPLEMENTATION) {
+			console.error("Missing environment/secret variables");
 			return new Response("Worker not configured", { status: 500 });
 		}
 
@@ -38,6 +38,7 @@ export default {
 			case "kv":
 				// check all namespaces are defined
 				if (!env.FORMS || !env.TIMEOUTS || !env.LINK_IDS) {
+					console.error("Missing namespaces");
 					return new Response("Worker not configured", { status: 500 });
 				}
 
@@ -48,6 +49,7 @@ export default {
 				});
 				break;
 			default:
+				console.error("Invalid storage implementation");
 				return new Response("Worker not configured", { status: 500 });
 		}
 
