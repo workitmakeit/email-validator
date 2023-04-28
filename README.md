@@ -42,7 +42,7 @@ SECRET_SIGNATURE = superlongrandomstring
 Example HTML form:
 
 ```html
-<form action="(worker url)/verify-email" method="post">
+<form action="(worker url)/verify_email" method="post">
   <label for="email">Email address</label>
   <input name="Email" type="email">
 
@@ -55,7 +55,7 @@ Example HTML form:
 </form>
 ```
 
-6. Profit! (and optionally create Worker Routes to the worker for /verify-email and /submit-form*)
+6. Profit! (and optionally create Worker Routes to the worker for /verify_email and /submit_form*)
 
 ## C4 Diagram
 
