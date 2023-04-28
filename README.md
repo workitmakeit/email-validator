@@ -12,7 +12,7 @@ You can use a service such as Formspree for getting form submissions, but you ca
 
 (assuming you've set up Mailgun and your form submission service)
 
-1. Clone this repo and install dependencies using `npm install` or `yarn install` (or you can just copy and paste index.ts into your worker, I guess 🙄).
+1. Clone this repo and install dependencies using `npm install` or `yarn install`.
 
 2. Create a worker. You can use `wrangler generate` or create a new worker on the Cloudflare Dashboard.
 
