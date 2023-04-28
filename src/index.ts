@@ -1,9 +1,8 @@
 import * as _routes from "./routes/@ALL";
 import { MethodString, Route, ValidMethods } from "./types";
 
-// give a type to the routes object
-const routes: { [key: string]: Route } = _routes;
-
+// convert _routes to a map of routes
+const routes: Map<string, Route> = new Map(Object.entries(_routes));
 
 export interface Env {
 	FROM_ADDRESS: string;
@@ -35,12 +34,7 @@ export default {
 		const url = new URL(req.url);
 		const key = url.pathname.replace(/^\/+|\/+$/g, "");
 
-		// prevent prototype pollution
-		if (key.includes("__proto__") || key.includes("constructor") || key.includes("prototype")) {
-			return new Response("Disallowed route name", { status: 400 });
-		}
-
-		const route = routes[key];
+		const route = routes.get(key);
 
 
 		// check route exists
