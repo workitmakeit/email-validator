@@ -1,4 +1,4 @@
-import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError } from "../abstract_storage";
+import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError } from "../abstract_storage";
 
 export interface NSObject {
     forms: KVNamespace;
@@ -59,13 +59,17 @@ class KVStorageImpl extends StorageImplementation {
 
 
     async push_link_id(link_id: string, expires_at: Date | null): Promise<void> {
-        // set the expiration to years in the future if it's null
-        let expiration_date = expires_at ?? new Date(253402300000000);
+        // check if the link id already exists (unlikely event unless purposeful)
+        if (await this._ns.link_ids.get(link_id) !== null) {
+            throw new LinkIDInUseError(link_id);
+        }
 
-        // convert to seconds past epoch
-        let expiration = Math.floor(expiration_date.getTime() / 1000);
-
-        await this._ns.link_ids.put(link_id, "", { expiration });
+        // push the link id, using the expiration if it exists (time past epoch in seconds)
+        if (expires_at) {
+            await this._ns.link_ids.put(link_id, "", { expiration: (expires_at.getTime() / 1000) });
+        } else {
+            await this._ns.link_ids.put(link_id, "");
+        }
     }
 
     async is_link_id_valid(link_id: string): Promise<boolean> {

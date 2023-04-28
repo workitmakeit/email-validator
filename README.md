@@ -64,7 +64,7 @@ Example HTML form:
   <button type="submit">Submit</button>
 
   <input name="EmailFieldName" value="Email" type="hidden"> <!-- set the value to the name of the email field -->
-  <input name="FormKey" value="my form name" type="hidden"> <!-- set the value to the key for the intended form in FORM_KEYS_TO_URLS_JSON -->
+  <input name="FormKey" value="my form name" type="hidden"> <!-- set the value to the key for the intended form in form storage -->
   <input name="VerifyRedirectTo" value="https://example.com" type="hidden"> <!-- optional, set the value to where to redirect after going to /verify-email -->
   <input name="SubmitRedirectTo" value="https://example.com" type="hidden"> <!-- optional, set the value to where to redirect after going to /submit-form -->
 </form>
@@ -81,7 +81,7 @@ Example form where each value is defined in the form reference:
 
   <button type="submit">Submit</button>
 
-  <input name="FormKey" value="my form name" type="hidden"> <!-- set the value to the key for the intended form in FORM_KEYS_TO_URLS_JSON -->
+  <input name="FormKey" value="my form name" type="hidden"> <!-- set the value to the key for the intended form in form storage -->
 </form>
 ```
 

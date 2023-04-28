@@ -82,6 +82,10 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 		.join("");
 
 
+	// provision a link ID with no expiration
+	// TODO: add confgurable expiration
+	const link_id = await storage_impl.provision_link_id(null);
+
 
 	// generate the validation submission url from the same data and the hash
 	const submit_url = new URL(req.url);
@@ -89,6 +93,7 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 
 	submit_url.searchParams.set("data", JSON.stringify(form_json));
 	submit_url.searchParams.set("hash", hash_string);
+	submit_url.searchParams.set("link_id", link_id);
 
 
 	// get the mailgun creds (check form reference, then add whatever is missing from env, cannot be undefined)

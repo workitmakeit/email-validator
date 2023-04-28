@@ -39,6 +39,12 @@ export class EmailTimeoutShorterThanCurrentError extends Error {
     }
 }
 
+export class LinkIDInUseError extends Error {
+    constructor(link_id: string) {
+        super(`Link ID in use: ${link_id}`);
+    }
+}
+
 
 export abstract class StorageImplementation {
     /**
@@ -97,6 +103,7 @@ export abstract class StorageImplementation {
      * @param {string} link_id - the link id to push
      * @param {Date | null} expires_at - the date the link id expires at, or null if it never expires
      * @returns {Promise<void>}
+     * @throws {LinkIDInUseError} - if the link id is already in use
      * 
      * @see {@link provision_link_id}
      * @see {@link is_link_id_valid}
@@ -154,6 +161,7 @@ export abstract class StorageImplementation {
      * 
      * @param {Date | null} expires_at - the date the link id expires at, or null if it never expires
      * @returns {Promise<string>} - the generated link id
+     * @throws {LinkIDInUseError} - if the link id is already in use
      * 
      * @see {@link push_link_id}
      * @see {@link is_link_id_valid}
