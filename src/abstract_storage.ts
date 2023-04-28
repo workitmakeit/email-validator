@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 
 export interface FormReference {
     form_url: string;
-    email_field_name?: string; // if undefined, will be set by form data
-    redirects?: { // if undefined, will be set by form data (same for each key/url)
+    email_field_name?: string; // if undefined, will be set by form data (EmailFieldName)
+    redirects?: { // if undefined, will be set by form data (VerifyRedirectTo & SubmitRedirectTo)
         verify?: string;
         submit?: string;
     }
