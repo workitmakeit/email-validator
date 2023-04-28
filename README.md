@@ -48,9 +48,11 @@ STORAGE_IMPLEMENTATION = "kv"
 
 4. (KV storage only) Create each KV namespace described in the `wrangler.toml` file using `wrangler kv:namespace create NAMESPACE_NAME` or the Cloudflare Dashboard.
 
-5. Deploy the worker using `wrangler publish` or the Cloudflare Dashboard.
+5. Define the desired forms with the form definition tool: `npm run manage-forms` or `yarn manage-forms`. You can also enter the form definition manually into KV using a JSON format. See the type definition for [FormReference](./src/abstract_storage.ts) for a structure.
 
-6. Create an HTML form, using the worker's verify-email route as the action address.
+6. Deploy the worker using `wrangler publish` or the Cloudflare Dashboard.
+
+7. Create an HTML form, using the worker's verify_email route as the action address.
 
 Example HTML form:
 
@@ -65,6 +67,21 @@ Example HTML form:
   <input name="FormKey" value="my form name" type="hidden"> <!-- set the value to the key for the intended form in FORM_KEYS_TO_URLS_JSON -->
   <input name="VerifyRedirectTo" value="https://example.com" type="hidden"> <!-- optional, set the value to where to redirect after going to /verify-email -->
   <input name="SubmitRedirectTo" value="https://example.com" type="hidden"> <!-- optional, set the value to where to redirect after going to /submit-form -->
+</form>
+```
+
+Each of the hidden input values (except FormKey) can instead be defined in the form reference when you set it up. Any values in the form reference take precedence over the hidden inputs. This can be useful in reducing the repetition of similar forms, and in protecting the values from exposure or modification.
+
+Example form where each value is defined in the form reference:
+
+```html
+<form action="(worker url)/verify_email" method="post">
+  <label for="email">Email address</label>
+  <input name="Email" type="email">
+
+  <button type="submit">Submit</button>
+
+  <input name="FormKey" value="my form name" type="hidden"> <!-- set the value to the key for the intended form in FORM_KEYS_TO_URLS_JSON -->
 </form>
 ```
 

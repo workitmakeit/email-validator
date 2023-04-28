@@ -22,18 +22,21 @@ const url_encode_object = (obj: { [s: string]: any }) => {
 }
 
 
-export const send_mail = (env: Env, data: EmailData) => {
+export const send_mail = (creds: {
+	api_key: string;
+	api_base_url: string;
+}, data: EmailData) => {
 	const dataUrlEncoded = url_encode_object(data);
 	const opts = {
 		method: "POST",
 		headers: {
-			Authorization: "Basic " + btoa("api:" + env.MAILGUN_API_KEY),
+			Authorization: "Basic " + btoa("api:" + creds.api_key),
 			"Content-Type": "application/x-www-form-urlencoded",
 			"Content-Length": dataUrlEncoded.length.toString()
 		},
 		body: dataUrlEncoded,
 	}
 
-	return fetch(`${env.MAILGUN_API_BASE_URL}/messages`, opts);
+	return fetch(`${creds.api_base_url}/messages`, opts);
 }
 // end credit

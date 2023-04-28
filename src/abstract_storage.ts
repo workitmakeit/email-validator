@@ -5,7 +5,7 @@ export interface FormReference {
     email_field_name?: string; // if undefined, will be set by form data
     redirects?: { // if undefined, will be set by form data (same for each key/url)
         verify?: string;
-        success?: string;
+        submit?: string;
     }
     from_address?: string; // if undefined, will fallback to env.FROM_ADDRESS
     mailgun_creds?: { // if undefined, will fallback to env.MAILGUN_API_KEY and env.MAILGUN_API_BASE_URL

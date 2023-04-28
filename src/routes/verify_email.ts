@@ -21,8 +21,30 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 	}
 
 
-	// get the field containing the email address from the form data
-	const email_field_name = form_data.get("EmailFieldName");
+	// get the intended form key from the form data
+	const form_key = form_data.get("FormKey");
+
+	if (!form_key) {
+		return new Response("No form key specified", { status: 400 });
+	}
+
+	// get the form reference from the key
+	let form_ref: FormReference;
+	try {
+		form_ref = await storage_impl.get_form(form_key);
+	} catch (e) {
+		if (e instanceof FormNotFoundError) {
+			return new Response("Form key invalid", { status: 400 });
+		}
+
+		console.error(e);
+		return new Response("Internal server error", { status: 500 });
+	}
+
+
+
+	// get the field containing the email address (check form reference, then form data, then undefined)
+	const email_field_name = form_ref.email_field_name || form_data.get("EmailFieldName") || undefined;
 
 	if (!email_field_name) {
 		return new Response("No email field name specified", { status: 400 });
@@ -37,39 +59,18 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 	}
 
 
-	// get the intended form key from the form data
-	const form_key = form_data.get("FormKey");
+	// get verify redirect url for later (check form reference, then form data, then undefined)
+	const redirect_url = form_ref.redirects?.verify || form_data.get("VerifyRedirectTo") || undefined;
 
-	if (!form_key) {
-		return new Response("No form key specified", { status: 400 });
-	}
-
-	// get verify redirect url for later
-	const redirect_url = form_data.get("VerifyRedirectTo");
-
-	// remove VerifyRedirectTo from the form data
+	// remove VerifyRedirectTo from the form data if it exists
 	form_data.delete("VerifyRedirectTo");
 
 
 	// convert to json
 	const form_json = Object.fromEntries(form_data.entries());
 
-
-	// get the form
-	let form: FormReference;
-	try {
-		form = await storage_impl.get_form(form_key);
-	} catch (e) {
-		if (e instanceof FormNotFoundError) {
-			return new Response("Form key invalid", { status: 400 });
-		}
-
-		console.error(e);
-		return new Response("Internal server error", { status: 500 });
-	}
-
 	// get the form url
-	const form_url = form.form_url;
+	const form_url = form_ref.form_url;
 
 
 	// generate a hash of the email address, data, form url, and secret signature
@@ -89,9 +90,23 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 	submit_url.searchParams.set("data", JSON.stringify(form_json));
 	submit_url.searchParams.set("hash", hash_string);
 
+
+	// get the mailgun creds (check form reference, then add whatever is missing from env, cannot be undefined)
+	const mailgun_creds = form_ref.mailgun_creds || {};
+
+	if (mailgun_creds.api_key === undefined) {
+		mailgun_creds.api_key = env.MAILGUN_API_KEY;
+	}
+	
+	if(mailgun_creds.api_base_url === undefined) {
+		mailgun_creds.api_base_url = env.MAILGUN_API_BASE_URL;
+	}
+
 	// send the email
-	const res = await send_mail(env, {
-		from: env.FROM_ADDRESS,
+	/* @ts-ignore-next-line */ // for some reason, even though it is impossible for each cred to be undefined, typescript thinks it is possible
+	const res = await send_mail(mailgun_creds, {
+		// select the from address from the form reference, then the env, cannot be undefined
+		from: form_ref.from_address || env.FROM_ADDRESS,
 		to,
 
 		subject: "Verify email to submit form",
