@@ -33,8 +33,15 @@ export default {
 
 		// get pathname from url without slashes to resolve route
 		const url = new URL(req.url);
-		const route = routes[url.pathname.replace(/^\/+|\/+$/g, "")];
-		
+		const key = url.pathname.replace(/^\/+|\/+$/g, "");
+
+		// prevent prototype pollution
+		if (key.includes("__proto__") || key.includes("constructor") || key.includes("prototype")) {
+			return new Response("Disallowed route name", { status: 400 });
+		}
+
+		const route = routes[key];
+
 
 		// check route exists
 		if (!route) {
