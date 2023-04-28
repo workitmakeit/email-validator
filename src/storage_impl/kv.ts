@@ -65,10 +65,11 @@ class KVStorageImpl extends StorageImplementation {
         }
 
         // push the link id, using the expiration if it exists (time past epoch in seconds)
+        // NOTE: current, value is not used, only for manual inspection. this may be changed to hold form data later on.
         if (expires_at) {
-            await this._ns.link_ids.put(link_id, "", { expiration: (expires_at.getTime() / 1000) });
+            await this._ns.link_ids.put(link_id, `(expires at ${expires_at.toISOString()})`, { expiration: (expires_at.getTime() / 1000) });
         } else {
-            await this._ns.link_ids.put(link_id, "");
+            await this._ns.link_ids.put(link_id, "(never expires)");
         }
     }
 
