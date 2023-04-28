@@ -2,10 +2,11 @@ import type { Route } from "../types";
 import type { Env } from "../index";
 
 import { send_mail, get_form_url_from_key } from "../utils";
+import { StorageImplementation } from "../abstract_storage";
 
 
 // TODO: decompose this function into smaller functions
-const verify_email_route = async (req: Request, env: Env) => {
+const verify_email_route = async (req: Request, env: Env, storage_impl: StorageImplementation) => {
 	// check if body is form data
 	if (req.headers.get("content-type") !== "application/x-www-form-urlencoded") {
 		return new Response("Invalid content type", { status: 400 });

@@ -1,3 +1,0 @@
-name = "cf-email-validator-worker"
-main = "src/index.ts"
-compatibility_date = "2023-04-27"

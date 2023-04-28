@@ -2,10 +2,11 @@ import type { Route } from "../types";
 import type { Env } from "../index";
 
 import { get_form_url_from_key } from "../utils";
+import { StorageImplementation } from "../abstract_storage";
 
 
 // TODO: decompose this function into smaller functions
-const submit_form_route = async (req: Request, env: Env) => {
+const submit_form_route = async (req: Request, env: Env, storage_impl: StorageImplementation) => {
 	// get url search params
 	const url = new URL(req.url);
 	const params = url.searchParams;

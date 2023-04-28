@@ -20,19 +20,30 @@ You can use a service such as Formspree for getting form submissions, but you ca
 
 ```
 FROM_ADDRESS: The email address to send from (must match Mailgun domain, can have a name, e.g. "My Name <email@email.tld>" or just the email address)
+
 MAILGUN_API_KEY: The API key for Mailgun
 MAILGUN_API_BASE_URL: The base URL for the Mailgun API (not including the any path after or a trailing slash, e.g. `https://api.mailgun.net/v3/DOMAIN_HERE`)
-FORM_KEYS_TO_URLS_JSON: A stringified JSON object mapping form "keys" to the form URL (to obscure the form URL from the client)
+
 SECRET_SIGNATURE: A long, random string used in hashing to verify submissions (note: hashtags may truncate the string in dev vars)
+
+STORAGE_IMPLEMENTATION: The storage implementation to use
 ```
+
+### Storage implementations
+
+- `kv`: Cloudflare Workers KV (default)
+- `do`: Cloudflare Durable Objects (not implemented yet, use kv for now)
 
 Example values (.dev.vars format):
 ```ini
 FROM_ADDRESS = "Mail Validator <email@mail.example.com>"
+
 MAILGUN_API_KEY = "apikey123"
 MAILGUN_API_BASE_URL = "https://api.mailgun.net/v3/mail.example.com"
-FORM_KEYS_TO_URLS_JSON = {"my form name": "https://example.com/form"}
+
 SECRET_SIGNATURE = superlongrandomstring
+
+STORAGE_IMPLEMENTATION = "kv"
 ```
 
 4. Deploy the worker using `wrangler publish` or the Cloudflare Dashboard.

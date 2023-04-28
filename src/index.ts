@@ -1,3 +1,6 @@
+import { StorageImplementation } from "./abstract_storage";
+import * as storage_impls from "./storage_impl/@ALL";
+
 import * as _routes from "./routes/@ALL";
 import { MethodString, Route, ValidMethods } from "./types";
 
@@ -6,18 +9,46 @@ const routes: Map<string, Route> = new Map(Object.entries(_routes));
 
 export interface Env {
 	FROM_ADDRESS: string;
+
 	MAILGUN_API_KEY: string;
 	MAILGUN_API_BASE_URL: string;
-	FORM_KEYS_TO_URLS_JSON: string;
+
 	SECRET_SIGNATURE: string;
+
+
+	STORAGE_IMPLEMENTATION: string;
+
+	FORMS: KVNamespace;
+	TIMEOUTS: KVNamespace;
+	LINK_IDS: KVNamespace;
 }
 
 
 export default {
 	async fetch(req: Request, env: Env, _ctx: ExecutionContext) {
 		// check every field of env is defined
-		if (!env.FROM_ADDRESS || !env.MAILGUN_API_KEY || !env.MAILGUN_API_BASE_URL || !env.FORM_KEYS_TO_URLS_JSON || !env.SECRET_SIGNATURE) {
+		if (!env.FROM_ADDRESS || !env.MAILGUN_API_KEY || !env.MAILGUN_API_BASE_URL || !env.SECRET_SIGNATURE || !env.STORAGE_IMPLEMENTATION) {
 			return new Response("Worker not configured", { status: 500 });
+		}
+
+
+		// create storage implementation
+		let storage_impl: StorageImplementation;
+		switch (env.STORAGE_IMPLEMENTATION.toLowerCase()) {
+			case "kv":
+				// check all namespaces are defined
+				if (!env.FORMS || !env.TIMEOUTS || !env.LINK_IDS) {
+					return new Response("Worker not configured", { status: 500 });
+				}
+
+				storage_impl = new storage_impls.KVStorage({
+					forms: env.FORMS,
+					timeouts: env.TIMEOUTS,
+					link_ids: env.LINK_IDS,
+				});
+				break;
+			default:
+				return new Response("Worker not configured", { status: 500 });
 		}
 
 
@@ -48,6 +79,6 @@ export default {
 		}
 
 		// handle the request
-		return await route.handle(req, env);
+		return await route.handle(req, env, storage_impl);
 	}
 };
