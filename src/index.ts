@@ -93,6 +93,12 @@ export async function verify_email_route(req: Request, env: Env) {
 		return new Response("No form key specified", { status: 400 });
 	}
 
+	// get verify redirect url for later
+	const redirect_url = form_data.get("VerifyRedirectTo");
+
+	// remove VerifyRedirectTo from the form data
+	form_data.delete("VerifyRedirectTo");
+
 
 	// get the url to the form
 	let form_url: string;
@@ -153,9 +159,6 @@ export async function verify_email_route(req: Request, env: Env) {
 		return new Response("Failed to send email", { status: 500 });
 	}
 
-
-	// check if form has verify redirect url
-	const redirect_url = form_data.get("VerifyRedirectTo");
 
 	if (redirect_url) {
 		// redirect to the redirect url with a 302
@@ -238,6 +241,10 @@ export async function submit_form_route(req: Request, env: Env) {
 	}
 
 
+	// get redirect url for later
+	const redirect_url = form_data.get("SubmitRedirectTo");
+
+
 	// generate a hash of the email address, data, form url, and secret signature
 	const hash_check = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data + form_url + env.SECRET_SIGNATURE));
 
@@ -253,6 +260,12 @@ export async function submit_form_route(req: Request, env: Env) {
 	}
 
 
+	// remove EmailFieldName, FormKey, and SubmitRedirectTo from the form data
+	form_data.delete("EmailFieldName");
+	form_data.delete("FormKey");
+	form_data.delete("SubmitRedirectTo");
+
+
 	// send the form data to the form url
 	const res = await fetch(form_url, {
 		method: "POST",
@@ -265,9 +278,6 @@ export async function submit_form_route(req: Request, env: Env) {
 		return new Response("Failed to submit form", { status: 500 });
 	}
 
-
-	// check if form data has a redirect url
-	const redirect_url = form_data.get("SubmitRedirectTo");
 
 	if (redirect_url) {
 		// redirect to the redirect url with a 302
