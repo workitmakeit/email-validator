@@ -12,7 +12,10 @@
   "scripts": {
     "start": "wrangler dev",
     "deploy": "wrangler publish",
-    "test": "vitest"
+    "test": "vitest",
+    "manage-forms:build": "tsc src/scripts/manage-forms.ts --outDir script-dist",
+    "manage-forms:run": "node script-dist/scripts/manage-forms.js",
+    "manage-forms": "npm run manage-forms:build && npm run manage-forms:run"
   },
   "dependencies": {
     "uuid": "^9.0.0"

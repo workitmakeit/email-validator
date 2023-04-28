@@ -47,7 +47,7 @@ STORAGE_IMPLEMENTATION = "kv"
 
 4. (KV storage only) Create each KV namespace described in the `wrangler.toml` file using `wrangler kv:namespace create NAMESPACE_NAME` or the Cloudflare Dashboard.
 
-5. Define the desired forms with the form definition tool: `npm run manage-forms` or `yarn manage-forms`. You can also enter the form definition manually into KV using a JSON format. See the type definition for [FormReference](./src/abstract_storage.ts) for a structure.
+5. Define the desired forms with the form definition tool: `npm run manage-forms` or `yarn manage-forms`. Use `npm run manage-forms:run` or `yarn manage-forms:run` to run the script without recompiling. You can also enter the form definition manually into KV using a JSON format. See the type definition for [FormReference](./src/abstract_storage.ts) for a structure.
 
 6. Deploy the worker using `wrangler publish` or the Cloudflare Dashboard.
 
