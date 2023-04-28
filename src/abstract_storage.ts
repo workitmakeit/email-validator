@@ -56,10 +56,10 @@ export abstract class StorageImplementation {
      *
      * @abstract
      * @param {string} key - the key to retrieve the form from
-     * @returns {Promise<FormReference | undefined>} - the form reference, or undefined if not found
+     * @returns {Promise<FormReference>} - the form reference
      * @throws {FormNotFoundError} - if the form is not found
      */
-    abstract get_form(key: string): Promise<FormReference | undefined>;
+    abstract get_form(key: string): Promise<FormReference>;
 
 
 

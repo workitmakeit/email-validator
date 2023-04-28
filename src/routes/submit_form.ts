@@ -1,8 +1,7 @@
 import type { Route } from "../types";
 import type { Env } from "../index";
 
-import { get_form_url_from_key } from "../utils";
-import { StorageImplementation } from "../abstract_storage";
+import { FormNotFoundError, FormReference, StorageImplementation } from "../abstract_storage";
 
 
 // TODO: decompose this function into smaller functions
@@ -50,18 +49,21 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 	}
 
 
-	// get the url to the form
-	let form_url: string;
+	// get the form
+	let form: FormReference;
 	try {
-		form_url = get_form_url_from_key(env, form_key);
+		form = await storage_impl.get_form(form_key);
 	} catch (e) {
+		if (e instanceof FormNotFoundError) {
+			return new Response("Form key invalid", { status: 400 });
+		}
+
 		console.error(e);
-		return new Response("Form keys misconfigured", { status: 500 });
+		return new Response("Internal server error", { status: 500 });
 	}
 
-	if (!form_url) {
-		return new Response("Invalid form key", { status: 400 });
-	}
+	// get the form url
+	const form_url = form.form_url;
 
 
 	// get the email address from the form data

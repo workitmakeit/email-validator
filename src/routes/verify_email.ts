@@ -1,8 +1,8 @@
 import type { Route } from "../types";
 import type { Env } from "../index";
 
-import { send_mail, get_form_url_from_key } from "../utils";
-import { StorageImplementation } from "../abstract_storage";
+import { send_mail } from "../utils";
+import { FormNotFoundError, FormReference, StorageImplementation } from "../abstract_storage";
 
 
 // TODO: decompose this function into smaller functions
@@ -55,18 +55,21 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 	const form_json = Object.fromEntries(form_data.entries());
 
 
-	// get the url to the form
-	let form_url: string;
+	// get the form
+	let form: FormReference;
 	try {
-		form_url = get_form_url_from_key(env, form_key);
+		form = await storage_impl.get_form(form_key);
 	} catch (e) {
+		if (e instanceof FormNotFoundError) {
+			return new Response("Form key invalid", { status: 400 });
+		}
+
 		console.error(e);
-		return new Response("Form keys misconfigured", { status: 500 });
+		return new Response("Internal server error", { status: 500 });
 	}
 
-	if (!form_url) {
-		return new Response("Invalid form key", { status: 400 });
-	}
+	// get the form url
+	const form_url = form.form_url;
 
 
 	// generate a hash of the email address, data, form url, and secret signature
