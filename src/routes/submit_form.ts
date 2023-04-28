@@ -69,9 +69,9 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 
 
 	// get the form
-	let form: FormReference;
+	let form_ref: FormReference;
 	try {
-		form = await storage_impl.get_form(form_key);
+		form_ref = await storage_impl.get_form(form_key);
 	} catch (e) {
 		if (e instanceof FormNotFoundError) {
 			return new Response("Form key invalid", { status: 400 });
@@ -82,16 +82,17 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 	}
 
 	// get the form url
-	const form_url = form.form_url;
+	const form_url = form_ref.form_url;
 
 
-	// get the email address from the form data
-	const email_field_name = form_data.get("EmailFieldName");
+	// get the field containing the email address (check form reference, then form data, then undefined)
+	const email_field_name = form_ref.email_field_name || form_data.get("EmailFieldName") || undefined;
 
 	if (!email_field_name) {
 		return new Response("No email field name specified", { status: 400 });
 	}
 
+	// get the email address from the form data
 	const to = form_data.get(email_field_name);
 
 	if (!to) {
@@ -99,8 +100,10 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 	}
 
 
-	// get redirect url for later
-	const redirect_url = form_data.get("SubmitRedirectTo");
+	
+	// get submit redirect url for later (check form reference, then form data, then undefined)
+	const redirect_url = form_ref.redirects?.submit || form_data.get("SubmitRedirectTo") || undefined;
+	
 
 
 	// generate a hash of the email address, data, form url, and secret signature
