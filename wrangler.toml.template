@@ -3,8 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2023-04-27"
 
 # if you're using kv storage, create a namespace for each of these and add the id here (name of namespace doesn't have to match the binding name here)
+# if not, remove these lines
+# if you aren't doing dev work, you can remove the preview_id
 kv_namespaces = [
-  { binding = "FORMS", id = "<id>" },
-  { binding = "TIMEOUTS", id = "<id>" },
-  { binding = "LINK_IDS", id = "<id>"}
+  { binding = "FORMS", id = "<id>", preview_id = "<id for use in dev mode>" },
+  { binding = "TIMEOUTS", id = "<id>", preview_id = "<id for use in dev mode>" },
+  { binding = "LINK_IDS", id = "<id>", preview_id = "<id for use in dev mode>" }
 ]

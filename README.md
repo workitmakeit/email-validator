@@ -46,9 +46,11 @@ SECRET_SIGNATURE = superlongrandomstring
 STORAGE_IMPLEMENTATION = "kv"
 ```
 
-4. Deploy the worker using `wrangler publish` or the Cloudflare Dashboard.
+4. (KV storage only) Create each KV namespace described in the `wrangler.toml` file using `wrangler kv:namespace create NAMESPACE_NAME` or the Cloudflare Dashboard.
 
-5. Create an HTML form, using the worker's verify-email route as the action address.
+5. Deploy the worker using `wrangler publish` or the Cloudflare Dashboard.
+
+6. Create an HTML form, using the worker's verify-email route as the action address.
 
 Example HTML form:
 
@@ -66,7 +68,7 @@ Example HTML form:
 </form>
 ```
 
-6. Profit! (and optionally create Worker Routes to the worker for /verify_email and /submit_form*)
+7. Profit! (and optionally create Worker Routes to the worker for /verify_email and /submit_form*)
 
 ## C4 Diagram
 
