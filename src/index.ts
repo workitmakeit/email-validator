@@ -66,9 +66,6 @@ export async function verify_email_route(req: Request, env: Env) {
 		return new Response("No form data", { status: 400 });
 	}
 
-	// convert to json
-	const form_json = Object.fromEntries(form_data.entries());
-
 
 	// get the field containing the email address from the form data
 	const email_field_name = form_data.get("EmailFieldName");
@@ -100,6 +97,10 @@ export async function verify_email_route(req: Request, env: Env) {
 	form_data.delete("VerifyRedirectTo");
 
 
+	// convert to json
+	const form_json = Object.fromEntries(form_data.entries());
+
+
 	// get the url to the form
 	let form_url: string;
 	try {
@@ -122,7 +123,7 @@ export async function verify_email_route(req: Request, env: Env) {
 		.map(b => b.toString(16).padStart(2, "0"))
 		.join("");
 
-	
+
 
 	// generate the validation submission url from the same data and the hash
 	const submit_url = new URL(req.url);
@@ -252,8 +253,8 @@ export async function submit_form_route(req: Request, env: Env) {
 	const hash_string = Array.from(new Uint8Array(hash_check))
 		.map(b => b.toString(16).padStart(2, "0"))
 		.join("");
-	
-	
+
+
 	// check if the hash is correct
 	if (hash_string !== provided_hash_string) {
 		return new Response("Invalid hash", { status: 400 });
@@ -283,7 +284,7 @@ export async function submit_form_route(req: Request, env: Env) {
 		// redirect to the redirect url with a 302
 		return new Response("Form submitted", { status: 302, headers: { Location: redirect_url } });
 	}
-	
+
 
 	return new Response("Form submitted", { status: 200 });
 }
