@@ -6,8 +6,6 @@ You can use a service such as Formspree for getting form submissions, but you ca
 
 >**Note** This doesn't filter spam. Make sure to ratelimit properly and filter submissions on the server side. Additionally, this may be used to spam someone's inbox, which may be addressed in the future.
 
-> **Warning** As of right now, links can be reused multiple times. See [#1](https://github.com/obfuscatedgenerated/cf-email-validator-worker/issues/1).
-
 ## Usage
 
 (assuming you've set up Mailgun and your form submission service)

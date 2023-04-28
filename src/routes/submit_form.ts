@@ -10,6 +10,25 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 	const url = new URL(req.url);
 	const params = url.searchParams;
 
+
+	// validate the link id
+	const link_id = params.get("link_id");
+
+	if (!link_id) {
+		return new Response("No link ID specified", { status: 400 });
+	}
+
+	const id_valid = await storage_impl.is_link_id_valid(link_id);
+
+	if (!id_valid) {
+		return new Response("Link ID invalid. Either this link is malformed, has already been used, or hasn't been propagated to your region yet. Try again shortly.", { status: 400 });
+	}
+
+	// destroy the link id
+	// don't bother to await this, we know it exists and we don't need to wait for it to be destroyed
+	storage_impl.destroy_link_id(link_id);
+
+
 	// get the data from the url
 	const data = params.get("data");
 

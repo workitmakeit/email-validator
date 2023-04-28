@@ -45,6 +45,12 @@ export class LinkIDInUseError extends Error {
     }
 }
 
+export class LinkIDNotFoundError extends Error {
+    constructor(link_id: string) {
+        super(`Link ID not found: ${link_id}`);
+    }
+}
+
 
 export abstract class StorageImplementation {
     /**
@@ -119,6 +125,20 @@ export abstract class StorageImplementation {
      */
     abstract is_link_id_valid(link_id: string): Promise<boolean>;
 
+    /**
+     * Destroys a link id.
+     * 
+     * @abstract
+     * @param {string} link_id - the link id to destroy
+     * @returns {Promise<void>}
+     * @throws {LinkIDNotFoundError} - if the link id is not found
+     * 
+     * @see {@link push_link_id}
+     * @see {@link is_link_id_valid}
+     * @see {@link provision_link_id}
+     */
+    abstract destroy_link_id(link_id: string): Promise<void>;
+
 
 
     /**
@@ -161,7 +181,6 @@ export abstract class StorageImplementation {
      * 
      * @param {Date | null} expires_at - the date the link id expires at, or null if it never expires
      * @returns {Promise<string>} - the generated link id
-     * @throws {LinkIDInUseError} - if the link id is already in use
      * 
      * @see {@link push_link_id}
      * @see {@link is_link_id_valid}

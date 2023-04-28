@@ -1,4 +1,4 @@
-import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError } from "../abstract_storage";
+import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError, LinkIDNotFoundError } from "../abstract_storage";
 
 export interface NSObject {
     forms: KVNamespace;
@@ -75,6 +75,15 @@ class KVStorageImpl extends StorageImplementation {
 
     async is_link_id_valid(link_id: string): Promise<boolean> {
         return await this._ns.link_ids.get(link_id) !== null;
+    }
+
+    async destroy_link_id(link_id: string): Promise<void> {
+        // check if the link id exists
+        if (await this._ns.link_ids.get(link_id) === null) {
+            throw new LinkIDNotFoundError(link_id);
+        }
+
+        await this._ns.link_ids.delete(link_id);
     }
 }
 
