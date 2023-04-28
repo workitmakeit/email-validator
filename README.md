@@ -1,3 +1,4 @@
+<!-- TODO: change these instructions to be a quick start guide, create a wiki or more md files for more info -->
 # Email Validation Worker (Mailgun)
 
 Sits as middleware before a form submission to validate the email address.
@@ -14,7 +15,7 @@ You can use a service such as Formspree for getting form submissions, but you ca
 
 2. Create a worker. You can use `wrangler generate` or create a new worker on the Cloudflare Dashboard.
 
-3. Set up the secret (or environment) variables, using Cloudflare Dashboard, `wrangler secret put`, or .dev.vars file:
+3. Set up the secret (or environment) variables, using Cloudflare Dashboard, `wrangler secret put SECRET_NAME`, or .dev.vars file:
 
 ```
 FROM_ADDRESS: The email address to send from (must match Mailgun domain, can have a name, e.g. "My Name <email@email.tld>" or just the email address)
@@ -32,7 +33,7 @@ STORAGE_IMPLEMENTATION: The storage implementation to use
 - `kv`: Cloudflare Workers KV (default)
 - `do`: Cloudflare Durable Objects (not implemented yet, use kv for now)
 
-Example values (.dev.vars format):
+Example values (.dev.vars [INI] format):
 ```ini
 FROM_ADDRESS = "Mail Validator <email@mail.example.com>"
 
