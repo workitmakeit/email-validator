@@ -8,7 +8,8 @@ import { EntityTooLargeError, FormNotFoundError, FormReference, StorageImplement
 // TODO: decompose this function into smaller functions
 const verify_email_route = async (req: Request, env: Env, storage_impl: StorageImplementation) => {
 	// check if body is form data
-	if (req.headers.get("content-type") !== "application/x-www-form-urlencoded") {
+	const content_type = req.headers.get("content-type");
+	if (!content_type?.startsWith("application/x-www-form-urlencoded") && !content_type?.startsWith("multipart/form-data") && !req.body) {
 		return new Response("Invalid content type", { status: 400 });
 	}
 

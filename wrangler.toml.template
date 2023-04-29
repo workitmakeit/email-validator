@@ -2,6 +2,8 @@ name = "cf-email-validator-worker"
 main = "src/index.ts"
 compatibility_date = "2023-04-27"
 
+compatibility_flags = ["nodejs_compat"]
+
 # if you're using kv storage, create a namespace for each of these and add the id here (name of namespace doesn't have to match the binding name here)
 # if not, remove these lines
 # if you aren't doing dev work, you can remove the preview_id

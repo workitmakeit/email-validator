@@ -1,4 +1,4 @@
-import type { Env } from "./index";
+import { Buffer } from "node:buffer";
 import { KVFieldMarker, SmartFormJSON } from "./types";
 
 

@@ -84,6 +84,22 @@ Example form where each value is defined in the form reference:
 </form>
 ```
 
+Example form where each value is defined in the form reference, and files are uploaded:
+
+```html
+<form action="(worker url)/verify_email" method="post" enctype="multipart/form-data">
+    <label for="email">Email address</label>
+    <input name="Email" type="email">
+
+    <label for="attachment">Cool capybara picture</label>
+    <input type="file" name="attachment" accept="image/png, image/jpeg">
+
+    <button type="submit">Submit</button>
+
+    <input name="FormKey" value="my form name" type="hidden">
+</form>
+```
+
 7. Profit! (and optionally create Worker Routes to the worker for /verify_email and /submit_form*)
 
 ## C4 Diagram
