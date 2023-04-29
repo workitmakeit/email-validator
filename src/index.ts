@@ -19,7 +19,7 @@ export interface Env {
 
 	FORMS: KVNamespace;
 	TIMEOUTS: KVNamespace;
-	LINK_IDS: KVNamespace;
+	LINKS: KVNamespace;
 }
 
 
@@ -37,7 +37,7 @@ export default {
 		switch (env.STORAGE_IMPLEMENTATION.toLowerCase()) {
 			case "kv":
 				// check all namespaces are defined
-				if (!env.FORMS || !env.TIMEOUTS || !env.LINK_IDS) {
+				if (!env.FORMS || !env.TIMEOUTS || !env.LINKS) {
 					console.error("Missing namespaces");
 					return new Response("Worker not configured", { status: 500 });
 				}
@@ -45,7 +45,7 @@ export default {
 				storage_impl = new storage_impls.KVStorage({
 					forms: env.FORMS,
 					timeouts: env.TIMEOUTS,
-					link_ids: env.LINK_IDS,
+					links: env.LINKS,
 				});
 				break;
 			default:

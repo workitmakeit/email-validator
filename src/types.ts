@@ -9,3 +9,10 @@ export interface Route {
     handle: RouteHandler;
     methods: MethodString[];
 }
+
+export enum KVFieldMarker {
+    STRING,
+    B64_BLOB,
+}
+
+export type SmartFormJSON = { [s: string]: { marker: KVFieldMarker, value: string, metadata?: { [key: string]: any } } };

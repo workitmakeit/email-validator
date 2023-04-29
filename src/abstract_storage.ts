@@ -62,6 +62,12 @@ export class LinkIDNotFoundError extends Error {
     }
 }
 
+export class InvalidFormField extends Error {
+    constructor(field_name: string) {
+        super(`Invalid form field: ${field_name}`);
+    }
+}
+
 
 export abstract class StorageImplementation {
     /**
@@ -114,27 +120,44 @@ export abstract class StorageImplementation {
 
 
     /**
-     * Pushes a link id to the storage (prefer to use provision_link_id for ease of use).
+     * Pushes a link (ID and form data) to the storage (prefer to use provision_link for ease of use).
      * 
      * @abstract
      * @param {string} link_id - the link id to push
+     * @param {FormData} form_data - the form data to push
      * @param {Date | null} expires_at - the date the link id expires at, or null if it never expires
      * @returns {Promise<void>}
      * @throws {LinkIDInUseError} - if the link id is already in use
      * 
-     * @see {@link provision_link_id}
-     * @see {@link is_link_id_valid}
+     * @see {@link provision_link}
+     * @see {@link is_link_valid}
      */
-    abstract push_link_id(link_id: string, expires_at: Date | null): Promise<void>;
+    abstract push_link(link_id: string, form_data: FormData, expires_at: Date | null): Promise<void>;
 
     /**
-     * Checks if a link id is valid.
+     * Checks if a link is valid.
      * 
      * @abstract
      * @param {string} link_id - the link id to check
      * @returns {Promise<boolean>} - true if the link id is valid, false otherwise
      */
-    abstract is_link_id_valid(link_id: string): Promise<boolean>;
+    abstract is_link_valid(link_id: string): Promise<boolean>;
+
+    /**
+     * Retrieves the form data for a link ID.
+     * 
+     * @abstract
+     * @param {string} link_id - the link id to retrieve the form data for
+     * @returns {Promise<FormData>} - the form data
+     * @throws {LinkIDNotFoundError} - if the link id is not found
+     * @throws {InvalidFormField} - if the form data contains an invalid form field (i.e. not a string or Blob)
+     * 
+     * @see {@link push_link}
+     * @see {@link is_link_valid}
+     * @see {@link destroy_link}
+     * @see {@link provision_link}
+     */
+    abstract get_link_form_data(link_id: string): Promise<FormData>;
 
     /**
      * Destroys a link id.
@@ -144,11 +167,11 @@ export abstract class StorageImplementation {
      * @returns {Promise<void>}
      * @throws {LinkIDNotFoundError} - if the link id is not found
      * 
-     * @see {@link push_link_id}
-     * @see {@link is_link_id_valid}
-     * @see {@link provision_link_id}
+     * @see {@link push_link}
+     * @see {@link is_link_valid}
+     * @see {@link provision_link}
      */
-    abstract destroy_link_id(link_id: string): Promise<void>;
+    abstract destroy_link(link_id: string): Promise<void>;
 
 
 
@@ -193,12 +216,12 @@ export abstract class StorageImplementation {
      * @param {Date | null} expires_at - the date the link id expires at, or null if it never expires
      * @returns {Promise<string>} - the generated link id
      * 
-     * @see {@link push_link_id}
-     * @see {@link is_link_id_valid}
+     * @see {@link push_link}
+     * @see {@link is_link_valid}
      */
-    async provision_link_id(expires_at: Date | null): Promise<string> {
+    async provision_link(form_data: FormData, expires_at: Date | null): Promise<string> {
         const id = this.generate_link_id();
-        await this.push_link_id(id, expires_at);
+        await this.push_link(id, form_data, expires_at);
         return id;
     }
 }

@@ -1,9 +1,10 @@
-import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError, LinkIDNotFoundError } from "../abstract_storage";
+import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError, LinkIDNotFoundError, InvalidFormField } from "../abstract_storage";
+import { form_data_to_json, json_to_form_data } from "../utils";
 
 export interface NSObject {
     forms: KVNamespace;
     timeouts: KVNamespace;
-    link_ids: KVNamespace;
+    links: KVNamespace;
 };
 
 class KVStorageImpl extends StorageImplementation {
@@ -58,32 +59,51 @@ class KVStorageImpl extends StorageImplementation {
 
 
 
-    async push_link_id(link_id: string, expires_at: Date | null): Promise<void> {
+    async push_link(link_id: string, form_data: FormData, expires_at: Date | null): Promise<void> {
         // check if the link id already exists (unlikely event unless purposeful)
-        if (await this._ns.link_ids.get(link_id) !== null) {
+        if (await this._ns.links.get(link_id) !== null) {
             throw new LinkIDInUseError(link_id);
         }
 
-        // push the link id, using the expiration if it exists (time past epoch in seconds)
-        // NOTE: current, value is not used, only for manual inspection. this may be changed to hold form data later on.
+        // convert the form data to a JSON string
+        const form_data_smart = await form_data_to_json(form_data);
+        const form_data_str = JSON.stringify(form_data_smart);
+
+        // push the link and data, using the expiration if it exists (time past epoch in seconds)
         if (expires_at) {
-            await this._ns.link_ids.put(link_id, `(expires at ${expires_at.toISOString()})`, { expiration: (expires_at.getTime() / 1000) });
+            await this._ns.links.put(link_id, form_data_str, { expiration: (expires_at.getTime() / 1000) });
         } else {
-            await this._ns.link_ids.put(link_id, "(never expires)");
+            await this._ns.links.put(link_id, form_data_str);
         }
     }
 
-    async is_link_id_valid(link_id: string): Promise<boolean> {
-        return await this._ns.link_ids.get(link_id) !== null;
+    async is_link_valid(link_id: string): Promise<boolean> {
+        return await this._ns.links.get(link_id) !== null;
     }
 
-    async destroy_link_id(link_id: string): Promise<void> {
-        // check if the link id exists
-        if (await this._ns.link_ids.get(link_id) === null) {
+    async get_link_form_data(link_id: string): Promise<FormData> {
+        const link_data = await this._ns.links.get(link_id);
+
+        if (link_data === null) {
             throw new LinkIDNotFoundError(link_id);
         }
 
-        await this._ns.link_ids.delete(link_id);
+        // parse the link data
+        const link_data_obj = JSON.parse(link_data);
+
+        // convert the form data to a FormData object
+        const form_data = json_to_form_data(link_data_obj);
+
+        return form_data;
+    }
+
+    async destroy_link(link_id: string): Promise<void> {
+        // check if the link id exists
+        if (await this._ns.links.get(link_id) === null) {
+            throw new LinkIDNotFoundError(link_id);
+        }
+
+        await this._ns.links.delete(link_id);
     }
 }
 
