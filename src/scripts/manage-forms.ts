@@ -1,8 +1,9 @@
 import { readSync } from "fs";
+import { spawn } from "child_process";
 
-import * as readline from "readline";
+import { createInterface } from "readline";
 
-const rl = readline.createInterface({
+const rl = createInterface({
     input: process.stdin,
     output: process.stdout
 });
@@ -24,7 +25,6 @@ const get_char = () => {
 const async_question = (question: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         rl.question(question, (answer) => {
-            rl.close();
             resolve(answer);
         });
     });
@@ -130,7 +130,7 @@ const validate_form = (form_ref: { [key: string]: any }): boolean => {
                 }
 
                 // check the from address is valid
-                if (!/^[^<]+<[^@]+@[^@]+>$/.test(entry[1])) {
+                if (!/^[^<]+<[^@]+@[^@]+>$/.test(entry[1]) && !/^[^@]+@[^@]+$/.test(entry[1])) {
                     console.log("Invalid from address: not in email address format");
                     return false;
                 }
@@ -223,51 +223,131 @@ const edit_existing_form = async () => {
 };
 
 
-const form_edit_flow = (form_ref: FormReference) => {
+const form_edit_header = (form_ref: FormReference) => {
     console.log("\nWhich field would you like to edit?");
     console.log("===================================");
-    console.log("1. Form URL");
-    console.log("2. Email Field Name");
+    console.log(`1. Form URL: ${form_ref.form_url}`);
+    console.log(`2. Email Field Name: ${form_ref.email_field_name}`);
     console.log("3. Redirects");
-    console.log("4. From Address");
+    console.log(`4. From Address: ${form_ref.from_address}`)
     console.log("5. Mailgun Credentials");
     console.log("\n9. Validate Form Reference");
     console.log("\n0. Finish");
 
     console.log("\n\nPress the corresponding number.\n");
+};
 
-    // take numeric input from user
-    // TODO: implement each option
+const form_edit_flow = async (form_ref: FormReference) => {
+    // take numeric input from user and update header each time
     while (true) {
+        form_edit_header(form_ref);
+
         const c = get_char();
 
         switch (c) {
             case "1":
-                console.log("Editing form URL...");
+                const new_url = await async_question("Enter the new form URL: ");
+
+                // validate the URL
+                try {
+                    new URL(new_url);
+                } catch (e) {
+                    console.log("Invalid form URL: " + e?.message || e);
+                    break;
+                }
+
+                // update the form reference
+                form_ref.form_url = new_url;
                 break;
             case "2":
-                console.log("Editing email field name...");
+                const new_email_field_name = await async_question("Enter the new email field name or enter nothing to undefine it: ");
+
+                // validate the email field name
+                if (typeof new_email_field_name !== "string") {
+                    console.log("Invalid email field name: not a string");
+                    break;
+                }
+
+                // update the form reference
+                if (new_email_field_name === "") {
+                    delete form_ref.email_field_name;
+                } else {
+                    form_ref.email_field_name = new_email_field_name;
+                }
                 break;
             case "3":
                 console.log("Editing redirects...");
+                // TODO
                 break;
             case "4":
-                console.log("Editing from address...");
+                const new_from_email = await async_question("Enter the new from address (email address part only): ");
+
+                // validate the from address
+                if (typeof new_from_email !== "string") {
+                    console.log("Invalid from address: not a string");
+                    break;
+                }
+
+                const new_name = await async_question("Enter a display name for the email address or leave blank for none: ");
+
+                // validate the name
+                if (typeof new_name !== "string") {
+                    console.log("Invalid name: not a string");
+                    break;
+                }
+
+                // build the from address
+                let new_from_address: string;
+                if (new_name === "") {
+                    new_from_address = new_from_email;
+                } else {
+                    new_from_address = `${new_name} <${new_from_email}>`;
+                }
+
+                // validate the from address
+                if (!/^[^<]+<[^@]+@[^@]+>$/.test(new_from_address) && !/^[^@]+@[^@]+$/.test(new_from_address)) {
+                    console.log("Invalid from address: not in email address format");
+                    break;
+                }
+
+                // update the form reference
+                form_ref.from_address = new_from_address;
                 break;
             case "5":
                 console.log("Editing mailgun credentials...");
+                // TODO
                 break;
             case "9":
                 console.log("Validating form reference...");
+
+                if (validate_form(form_ref)) {
+                    console.log("Form reference validated successfully.");
+                } else {
+                    console.log("Form reference validation failed.");
+                }
+
                 break;
             case "0":
-                console.log("Exiting...");
-                // TODO: validate and output result
+                console.log("Validating form reference...");
+
+                if (validate_form(form_ref)) {
+                    console.log("Form reference validated successfully.");
+                } else {
+                    console.log("Form reference validation failed.");
+                    form_edit_flow(form_ref);
+                    return;
+                }
+
+                // output the form reference
+                console.log("\n\nFinal form reference JSON:\n\n");
+                console.log(JSON.stringify(form_ref));
+
                 process.exit(0);
             default:
                 // invalid input, make ascii bell sound
                 process.stdout.write("\u0007");
         }
+    }
 }
 
 
