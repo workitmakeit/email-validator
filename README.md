@@ -1,5 +1,5 @@
 <!-- TODO: change these instructions to be a quick start guide, create a wiki or more md files for more info -->
-# Email Validation Worker (Mailgun)
+# Email Validation Worker (Mailgun) for Cloudflare Workers
 
 Sits as middleware before a form submission to validate the email address.
 
