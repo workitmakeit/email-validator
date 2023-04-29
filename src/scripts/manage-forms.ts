@@ -189,6 +189,51 @@ const validation_funcs: { [key: string]: (value: any) => boolean } = {
 
         return true;
     },
+    subject: (value: string) => {
+        // check the subject is a string
+        if (typeof value !== "string") {
+            console.log("Invalid subject: not a string");
+            return false;
+        }
+
+        // check if the subject is not too long for an email
+        if (value.length > 78) {
+            console.log("Invalid subject: too long for an email");
+            return false;
+        }
+
+        return true;
+    },
+    msg_text: (value: string) => {
+        // check the message text is a string
+        if (typeof value !== "string") {
+            console.log("Invalid message text: not a string");
+            return false;
+        }
+
+        // check the message text contains $LINK$ at least once
+        if (!value.includes("$LINK$")) {
+            console.log("Invalid message text: does not contain $LINK$");
+            return false;
+        }
+
+        return true;
+    },
+    msg_html: (value: string) => {
+        // check the message html is a string
+        if (typeof value !== "string") {
+            console.log("Invalid message html: not a string");
+            return false;
+        }
+
+        // check the message html contains $LINK$ at least once
+        if (!value.includes("$LINK$")) {
+            console.log("Invalid message html: does not contain $LINK$");
+            return false;
+        }
+
+        return true;
+    },
 };
 
 const validate_form = (form_ref: { [key: string]: any }): boolean => {
@@ -269,6 +314,9 @@ const form_edit_header = (form_ref: FormReference) => {
     console.log("3. Redirects");
     console.log(`4. From Address Override: ${form_ref.from_address}`)
     console.log("5. Mailgun Credentials Override");
+    console.log(`6. Subject Override: ${form_ref.subject}`);
+    console.log(`7. Message Text Override: ${form_ref.msg_text?.slice(0, 20)}...`);
+    console.log(`8. Message HTML Override: ${form_ref.msg_html?.slice(0, 20)}...`);
     console.log("\n9. Validate Form Reference");
     console.log("\n0. Finish");
 
@@ -430,6 +478,103 @@ const form_edit_flow = async (form_ref: FormReference) => {
                     break;
                 }
 
+                break;
+            case "6":
+                const new_subject_line = await async_question("Enter the new subject line or leave blank to undefine it: ");
+
+                if (new_subject_line === "") {
+                    delete form_ref.subject;
+                    break;
+                }
+
+                // validate the subject line
+                if (!validation_funcs.subject(new_subject_line)) {
+                    break;
+                }
+
+                // update the form reference
+                form_ref.subject = new_subject_line;
+                break;
+            case "7":
+                // TODO: could DRY with HTML entry
+                console.log("Enter the new email body (plaintext) line-by-line.");
+                console.log("Use $LINK$ as a placeholder or the link (e.g. \"Click $LINK$\" becomes \"Click https://verificationlink...\").");
+                console.log("Enter a blank line to finish. Enter only \\n to add a blank line without finishing.");
+                console.log("Enter nothing to undefine it.\n");
+
+                let new_email_body = "";
+
+                while (true) {
+                    const line = await async_question("> ");
+
+                    if (line === "") {
+                        break;
+                    }
+
+                    // replace \n with newline
+                    if (line === "\\n") {
+                        new_email_body += "\n";
+                        continue;
+                    }
+
+                    new_email_body += `${line}\n`;
+                }
+
+                if (new_email_body === "") {
+                    delete form_ref.msg_text;
+                    break;
+                }
+
+                // remove the last newline
+                new_email_body = new_email_body.slice(0, -1);
+
+                // validate the email body
+                if (!validation_funcs.msg_text(new_email_body)) {
+                    break;
+                }
+
+                // update the form reference
+                form_ref.msg_text = new_email_body;
+                break;
+            case "8":
+                console.log("Enter the new email body (HTML) line-by-line.");
+                console.log("Use $LINK$ as a placeholder or the link (e.g. \"Click $LINK$\" becomes \"Click https://verificationlink...\").");
+                console.log("Enter a blank line to finish. Enter only \\n to add a blank line without finishing.");
+                console.log("Enter nothing to undefine it.\n");
+
+                let new_email_body_html = "";
+
+                while (true) {
+                    const line = await async_question("> ");
+
+                    if (line === "") {
+                        break;
+                    }
+
+                    // replace \n with newline
+                    if (line === "\\n") {
+                        new_email_body_html += "\n";
+                        continue;
+                    }
+
+                    new_email_body_html += `${line}\n`;
+                }
+
+                if (new_email_body_html === "") {
+                    delete form_ref.msg_html;
+                    break;
+                }
+
+                // remove the last newline
+                new_email_body_html = new_email_body_html.slice(0, -1);
+
+                // validate the email body
+                if (!validation_funcs.msg_html(new_email_body_html)) {
+                    break;
+                }
+
+                // update the form reference
+                form_ref.msg_html = new_email_body_html;
                 break;
             case "9":
                 console.log("Validating form reference...");

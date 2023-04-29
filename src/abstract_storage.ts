@@ -2,18 +2,27 @@ import { v4 as uuidv4 } from "uuid";
 
 export interface FormReference {
     form_url: string;
+
     email_field_name?: string; // if undefined, will be set by form data (EmailFieldName)
+
     redirects?: { // if undefined, will be set by form data (VerifyRedirectTo & SubmitRedirectTo)
         verify?: string;
         submit?: string;
     }
-    from_address?: string; // if undefined, will fallback to env.FROM_ADDRESS
+
     mailgun_creds?: { // if undefined, will fallback to env.MAILGUN_API_KEY and env.MAILGUN_API_BASE_URL
         api_key?: string;
         api_base_url?: string;
     }
     // WARNING: it is not recommended to override mailgun creds in the form reference as the security of the credentials in the storage is not guaranteed
     // if you need to override the credentials (e.g. for a separate email domain), consider establishing a separate worker instance where the credentials are set in the env/secrets
+
+
+    from_address?: string; // if undefined, will fallback to env.FROM_ADDRESS
+
+    subject?: string; // if undefined, will fallback to "Verify email to submit form".
+    msg_text?: string; // use $LINK$ as a placeholder for the link (e.g. "Click $LINK$" becomes "Click https://verificationlink..."). if undefined, will fallback to a reasonable default plain text message.
+    msg_html?: string; // use $LINK$ as a placeholder for the link (e.g. "Click $LINK$" becomes "Click https://verificationlink..."). if undefined, will fallback to a reasonable default html message.
 }
 
 export enum EmailTimeoutReason {

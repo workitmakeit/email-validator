@@ -102,8 +102,8 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 	if (mailgun_creds.api_key === undefined) {
 		mailgun_creds.api_key = env.MAILGUN_API_KEY;
 	}
-	
-	if(mailgun_creds.api_base_url === undefined) {
+
+	if (mailgun_creds.api_base_url === undefined) {
 		mailgun_creds.api_base_url = env.MAILGUN_API_BASE_URL;
 	}
 
@@ -114,16 +114,16 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 		from: form_ref.from_address || env.FROM_ADDRESS,
 		to,
 
-		subject: "Verify email to submit form",
+		subject: form_ref.subject || "Verify email to submit form",
 
-		text: `Hello! This email was entered into a form, which requires validation before submission.
+		text: form_ref.msg_text?.replaceAll("$LINK$", submit_url.toString()) || `Hello! This email was entered into a form, which requires validation before submission.
 		Please click the link below to validate your email address and submit the form.
 
 		${submit_url.toString()}
 		
 		If you did not enter your email into a form, please ignore this email. Thank you!`,
 
-		html: `<h1>Please verify your email</h1>
+		html: form_ref.msg_html?.replaceAll("$LINK$", submit_url.toString()) || `<h1>Please verify your email</h1>
 		<p>Hello! This email was entered into a form, which requires validation before submission.</p>
 		<p>Please click the link below to validate your email address and submit the form.</p>
 		<p><a href="${submit_url.toString()}">${submit_url.toString()}</a></p>
