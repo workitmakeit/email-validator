@@ -102,7 +102,7 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 
 	// check if the form was submitted successfully
 	if (res.status !== 200) {
-		console.error(res);
+		console.error(await res.text());
 		return new Response("Failed to submit form", { status: 500 });
 	}
 
