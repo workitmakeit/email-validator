@@ -114,6 +114,7 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 		mailgun_creds.api_base_url = env.MAILGUN_API_BASE_URL;
 	}
 
+
 	// send the email
 	/* @ts-ignore-next-line */ // for some reason, even though it is impossible for each cred to be undefined, typescript thinks it is possible
 	const res = await send_mail(mailgun_creds, {

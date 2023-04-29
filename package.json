@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230404.0",
-    "@miniflare/tre": "^3.0.0-next.13",
     "@types/uuid": "^9.0.1",
     "typescript": "^5.0.4",
     "vitest": "^0.30.1",
@@ -11,7 +10,7 @@
   },
   "private": true,
   "scripts": {
-    "start": "wrangler dev --experimental-local --experimental-local-remote-kv",
+    "start": "wrangler dev",
     "deploy": "wrangler publish",
     "test": "vitest",
     "manage-forms:build": "tsc src/scripts/manage-forms.ts --outDir script-dist",
