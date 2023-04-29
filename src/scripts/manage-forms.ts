@@ -106,18 +106,42 @@ const validation_funcs: { [key: string]: (value: any) => boolean } = {
                 return false;
             }
 
-            if (typeof redirect !== "string") {
-                console.log("Invalid redirect URL: " + redirect);
-                return false;
-            }
 
-            // validate the URL
-            try {
-                new URL(redirect);
-            } catch (e) {
-                console.log("Invalid redirect URL: " + e?.message || e);
-                return false;
-            }
+            validation_funcs["redirects." + name](redirect);
+        }
+
+        return true;
+    },
+    "redirects.verify": (value: string) => {
+        if (typeof value !== "string") {
+            console.log("Invalid verify redirect URL: " + value);
+            return false;
+        }
+
+
+        // validate the URL
+        try {
+            new URL(value);
+        } catch (e) {
+            console.log("Invalid verify redirect URL: " + e?.message || e);
+            return false;
+        }
+
+        return true;
+    },
+    "redirects.submit": (value: string) => {
+        if (typeof value !== "string") {
+            console.log("Invalid submit redirect URL: " + value);
+            return false;
+        }
+
+
+        // validate the URL
+        try {
+            new URL(value);
+        } catch (e) {
+            console.log("Invalid submit redirect URL: " + e?.message || e);
+            return false;
         }
 
         return true;
@@ -358,8 +382,65 @@ const form_edit_flow = async (form_ref: FormReference) => {
 
                 break;
             case "3":
-                console.log("Editing redirects...");
-                // TODO
+                console.log("Which redirect would you like to edit?");
+                console.log("=======================================");
+                console.log(`1. Verify: ${form_ref.redirects?.verify}`);
+                console.log(`2. Submit: ${form_ref.redirects?.submit}`);
+
+                console.log("\nAny other key to cancel.")
+
+                console.log("\n\nPress the corresponding number.\n");
+
+                const c3 = get_char();
+
+                switch (c3) {
+                    case "1":
+                        const new_verify_redirect = await async_question("Enter the new verify redirect URL or enter nothing to undefine it: ");
+
+                        if (new_verify_redirect === "") {
+                            delete form_ref.redirects?.verify;
+                        }
+
+                        // validate the URL
+                        if (!validation_funcs.redirect_url(new_verify_redirect)) {
+                            break;
+                        }
+
+                        // update the form reference
+                        if (!form_ref.redirects) {
+                            form_ref.redirects = {};
+                        }
+
+                        form_ref.redirects.verify = new_verify_redirect;
+                        break;
+                    case "2":
+                        const new_submit_redirect = await async_question("Enter the new submit redirect URL or enter nothing to undefine it: ");
+
+                        if (new_submit_redirect === "") {
+                            delete form_ref.redirects?.submit;
+                        }
+
+                        // validate the URL
+                        if (!validation_funcs.redirect_url(new_submit_redirect)) {
+                            break;
+                        }
+
+                        // update the form reference
+                        if (!form_ref.redirects) {
+                            form_ref.redirects = {};
+                        }
+
+                        form_ref.redirects.submit = new_submit_redirect;
+                        break;
+                    default:
+                    // exit
+                }
+
+                // validate all redirects
+                if (!validation_funcs.redirects(form_ref.redirects)) {
+                    console.log("Invalid redirects");
+                }
+
                 break;
             case "4":
                 const new_from_email = await async_question("Enter the new from address (email address part only): ");
@@ -475,7 +556,6 @@ const form_edit_flow = async (form_ref: FormReference) => {
                 // validate the mailgun creds
                 if (form_ref.mailgun_creds && !validation_funcs.mailgun_creds(form_ref.mailgun_creds)) {
                     console.log("Invalid mailgun creds");
-                    break;
                 }
 
                 break;
