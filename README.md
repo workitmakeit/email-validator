@@ -84,7 +84,7 @@ Example form where each value is defined in the form reference:
 </form>
 ```
 
-Example form where each value is defined in the form reference, and files are uploaded:
+Example form where each value is defined in the form reference, and files are uploaded (note: not available on Formspree Free plan):
 
 ```html
 <form action="(worker url)/verify_email" method="post" enctype="multipart/form-data">
