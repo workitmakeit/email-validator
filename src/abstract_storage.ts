@@ -68,15 +68,22 @@ export class InvalidFormField extends Error {
     }
 }
 
+export class EntityTooLargeError extends Error {
+    constructor() {
+        super(`Entity too large`);
+    }
+}
+
 
 export abstract class StorageImplementation {
     /**
-     * Used to create a new form reference (not intended to be used in regular runtime).
+     * Used to create a new form reference or overwrite one (not intended to be used in regular runtime).
      *
      * @abstract
      * @param {string} key - the key to store the form under
      * @param {FormReference} form - the form reference to store
      * @returns {Promise<void>}
+     * @throws {EntityTooLargeError} - if the key or form data is too large
      */
     abstract push_form(key: string, form: FormReference): Promise<void>;
 
@@ -99,6 +106,7 @@ export abstract class StorageImplementation {
      * @param {EmailTimeout} timeout - the timeout to push
      * @returns {Promise<void>}
      * @throws {EmailTimeoutShorterThanCurrentError} - if the timeout is shorter than the current timeout
+     * @throws {EntityTooLargeError} - if the email or timeout data is too large
      * 
      * @see {@link timeout_email}
      * @see {@link is_email_timed_out}
@@ -128,6 +136,7 @@ export abstract class StorageImplementation {
      * @param {Date | null} expires_at - the date the link id expires at, or null if it never expires
      * @returns {Promise<void>}
      * @throws {LinkIDInUseError} - if the link id is already in use
+     * @throws {EntityTooLargeError} - if the ID or form data is too large
      * 
      * @see {@link provision_link}
      * @see {@link is_link_valid}
@@ -215,6 +224,7 @@ export abstract class StorageImplementation {
      * 
      * @param {Date | null} expires_at - the date the link id expires at, or null if it never expires
      * @returns {Promise<string>} - the generated link id
+     * @throws {EntityTooLargeError} - if the ID or form data is too large for the storage implementation
      * 
      * @see {@link push_link}
      * @see {@link is_link_valid}

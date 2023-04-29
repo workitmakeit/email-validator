@@ -1,4 +1,4 @@
-import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError, LinkIDNotFoundError, InvalidFormField } from "../abstract_storage";
+import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError, LinkIDNotFoundError, InvalidFormField, EntityTooLargeError } from "../abstract_storage";
 import { form_data_to_json, json_to_form_data } from "../utils";
 
 export interface NSObject {
@@ -19,7 +19,19 @@ class KVStorageImpl extends StorageImplementation {
 
 
     async push_form(key: string, form: FormReference): Promise<void> {
-        await this._ns.forms.put(key, JSON.stringify(form));
+        const form_ref_str = JSON.stringify(form);
+
+        // check the size of the final JSON is under or equal to 25 MiB
+        if (form_ref_str.length > 25 * 1024 * 1024) {
+            throw new EntityTooLargeError();
+        }
+
+        // check the size of the key is under or equal to 512 bytes
+        if (key.length > 512) {
+            throw new EntityTooLargeError();
+        }
+
+        await this._ns.forms.put(key, form_ref_str);
     }
 
     async get_form(key: string): Promise<FormReference> {
@@ -44,7 +56,19 @@ class KVStorageImpl extends StorageImplementation {
             }
         }
 
-        await this._ns.timeouts.put(email, JSON.stringify(timeout));
+        const timeout_str = JSON.stringify(timeout);
+
+        // check the size of the final JSON is under or equal to 25 MiB
+        if (timeout_str.length > 25 * 1024 * 1024) {
+            throw new EntityTooLargeError();
+        }
+
+        // check the size of the email is under or equal to 512 bytes
+        if (email.length > 512) {
+            throw new EntityTooLargeError();
+        }
+
+        await this._ns.timeouts.put(email, timeout_str);
     }
 
     async is_email_timed_out(email: string): Promise<boolean> {
@@ -68,6 +92,16 @@ class KVStorageImpl extends StorageImplementation {
         // convert the form data to a JSON string
         const form_data_smart = await form_data_to_json(form_data);
         const form_data_str = JSON.stringify(form_data_smart);
+
+        // check the size of the final JSON is under or equal to 25 MiB
+        if (form_data_str.length > 25 * 1024 * 1024) {
+            throw new EntityTooLargeError();
+        }
+
+        // check the link id is under or equal to 512 bytes
+        if (link_id.length > 512) {
+            throw new EntityTooLargeError();
+        }
 
         // push the link and data, using the expiration if it exists (time past epoch in seconds)
         if (expires_at) {

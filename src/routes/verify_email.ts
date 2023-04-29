@@ -2,7 +2,7 @@ import type { Route } from "../types";
 import type { Env } from "../index";
 
 import { send_mail } from "../utils";
-import { FormNotFoundError, FormReference, StorageImplementation } from "../abstract_storage";
+import { EntityTooLargeError, FormNotFoundError, FormReference, StorageImplementation } from "../abstract_storage";
 
 
 // TODO: decompose this function into smaller functions
@@ -14,7 +14,17 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 
 
 	// copy x-www-form-urlencoded from the request body
-	const form_data = await req.formData();
+	let form_data: FormData;
+	try {
+		form_data = await req.formData();
+	} catch (e) {
+		if (e instanceof TypeError) {
+			return new Response("Invalid form data", { status: 400 });
+		}
+
+		console.error(e);
+		return new Response("Internal server error", { status: 500 });
+	}
 
 	if (!form_data) {
 		return new Response("No form data", { status: 400 });
@@ -66,33 +76,29 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 	form_data.delete("VerifyRedirectTo");
 
 
-	// convert to json
-	const form_json = Object.fromEntries(form_data.entries());
-
-	// get the form url
-	const form_url = form_ref.form_url;
-
-
-	// generate a hash of the email address, data, form url, and secret signature
-	const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(form_json) + form_url + env.SECRET_SIGNATURE));
-
-	// convert the hash to a string
-	const hash_string = Array.from(new Uint8Array(hash))
-		.map(b => b.toString(16).padStart(2, "0"))
-		.join("");
-
-
-	// provision a link ID with no expiration
+	// provision a link with the form data (no expiration)
 	// TODO: add confgurable expiration
-	const link_id = await storage_impl.provision_link_id(null);
+	let link_id: string;
+	try {
+		link_id = await storage_impl.provision_link(form_data, null);
+	} catch (e) {
+		if (e instanceof TypeError) {
+			return new Response("Invalid form data", { status: 400 });
+		}
+
+		if (e instanceof EntityTooLargeError) {
+			return new Response("Entity too large", { status: 413 });
+		}
+
+		console.error(e);
+		return new Response("Internal server error", { status: 500 });
+	}
 
 
-	// generate the validation submission url from the same data and the hash
+	// generate the validation submission url
 	const submit_url = new URL(req.url);
 	submit_url.pathname = "/submit_form";
 
-	submit_url.searchParams.set("data", JSON.stringify(form_json));
-	submit_url.searchParams.set("hash", hash_string);
 	submit_url.searchParams.set("link_id", link_id);
 
 

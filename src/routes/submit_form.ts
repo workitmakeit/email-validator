@@ -1,7 +1,7 @@
 import type { Route } from "../types";
 import type { Env } from "../index";
 
-import { FormNotFoundError, FormReference, StorageImplementation } from "../abstract_storage";
+import { FormNotFoundError, FormReference, InvalidFormField, StorageImplementation } from "../abstract_storage";
 
 
 // TODO: decompose this function into smaller functions
@@ -18,46 +18,29 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 		return new Response("No link ID specified", { status: 400 });
 	}
 
-	const id_valid = await storage_impl.is_link_id_valid(link_id);
+	const id_valid = await storage_impl.is_link_valid(link_id);
 
 	if (!id_valid) {
 		return new Response("Link ID invalid. Either this link is malformed, has already been used, or hasn't been propagated to your region yet. Try again shortly.", { status: 400 });
 	}
 
-	// destroy the link id
-	// don't bother to await this, we know it exists and we don't need to wait for it to be destroyed
-	storage_impl.destroy_link_id(link_id);
-
-
-	// get the data from the url
-	const data = params.get("data");
-
-	if (!data) {
-		return new Response("No form data specified", { status: 400 });
-	}
-
-	// get the hash from the url
-	const provided_hash_string = params.get("hash");
-
-	if (!provided_hash_string) {
-		return new Response("No hash specified", { status: 400 });
-	}
-
-
-	// transform the form data string back to a form data object
-	let data_json: { [key: string]: string };
+	let form_data: FormData;
 	try {
-		data_json = JSON.parse(data);
+		form_data = await storage_impl.get_link_form_data(link_id);
 	} catch (e) {
+		if (e instanceof InvalidFormField) {
+			console.error(e);
+			return new Response("Form data corrupted", { status: 500 });
+		}
+
 		console.error(e);
-		return new Response("Invalid form data", { status: 400 });
+		return new Response("Internal server error", { status: 500 });
 	}
 
-	// convert the data to a form data object
-	const form_data = new FormData();
-	for (const key in data_json) {
-		form_data.set(key, data_json[key]);
-	}
+	// destroy the link
+	// don't bother to await this, we know it exists and we don't need to wait for it to be destroyed
+	// TODO: defer destruction of link so the redirects can access the form data from the id
+	storage_impl.destroy_link(link_id);
 
 
 	// get the form key from the form data
@@ -100,25 +83,9 @@ const submit_form_route = async (req: Request, env: Env, storage_impl: StorageIm
 	}
 
 
-	
+
 	// get submit redirect url for later (check form reference, then form data, then undefined)
 	const redirect_url = form_ref.redirects?.submit || form_data.get("SubmitRedirectTo") || undefined;
-	
-
-
-	// generate a hash of the email address, data, form url, and secret signature
-	const hash_check = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data + form_url + env.SECRET_SIGNATURE));
-
-	// convert the hash to a string
-	const hash_string = Array.from(new Uint8Array(hash_check))
-		.map(b => b.toString(16).padStart(2, "0"))
-		.join("");
-
-
-	// check if the hash is correct
-	if (hash_string !== provided_hash_string) {
-		return new Response("Invalid hash", { status: 400 });
-	}
 
 
 	// remove EmailFieldName, FormKey, and SubmitRedirectTo from the form data
