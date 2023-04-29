@@ -67,6 +67,12 @@ export default {
 		const url = new URL(req.url);
 		const key = url.pathname.replace(/^\/+|\/+$/g, "");
 
+		// if they are requesting the root, show a status message
+		if (key === "") {
+			return new Response("Worker OK", { status: 200 });
+		}
+
+		// get route from key
 		const route = routes.get(key);
 
 
