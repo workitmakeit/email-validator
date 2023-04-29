@@ -12,6 +12,8 @@ export interface FormReference {
         api_key?: string;
         api_base_url?: string;
     }
+    // WARNING: it is not recommended to override mailgun creds in the form reference as the security of the credentials in the storage is not guaranteed
+    // if you need to override the credentials (e.g. for a separate email domain), consider establishing a separate worker instance where the credentials are set in the env/secrets
 }
 
 export enum EmailTimeoutReason {

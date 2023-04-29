@@ -229,8 +229,8 @@ const form_edit_header = (form_ref: FormReference) => {
     console.log(`1. Form URL: ${form_ref.form_url}`);
     console.log(`2. Email Field Name: ${form_ref.email_field_name}`);
     console.log("3. Redirects");
-    console.log(`4. From Address: ${form_ref.from_address}`)
-    console.log("5. Mailgun Credentials");
+    console.log(`4. From Address Override: ${form_ref.from_address}`)
+    console.log("5. Mailgun Credentials Override");
     console.log("\n9. Validate Form Reference");
     console.log("\n0. Finish");
 
@@ -314,8 +314,79 @@ const form_edit_flow = async (form_ref: FormReference) => {
                 form_ref.from_address = new_from_address;
                 break;
             case "5":
-                console.log("Editing mailgun credentials...");
-                // TODO
+                console.log("WARNING: it is not recommended to override mailgun creds in the form reference as the security of the credentials in the storage is not guaranteed");
+                console.log("If you need to override the credentials (e.g. for a separate email domain), consider establishing a separate worker instance where the credentials are set in the env/secrets");
+
+                console.log("\nWhich field would you like to edit?");
+                console.log("===================================");
+                console.log(`1. API Base URL: ${form_ref.mailgun_creds?.api_base_url !== undefined ? "defined (secret)" : "undefined"}`);
+                console.log(`2. API Key: ${form_ref.mailgun_creds?.api_key !== undefined ? "defined (secret)" : "undefined"}`);
+
+                console.log("\nAny other key to cancel");
+
+                console.log("\n\nPress the corresponding number.\n");
+
+                const c2 = get_char();
+
+                switch (c2) {
+                    case "1":
+                        let new_api_base_url = await async_question("Enter the new API base URL: ");
+
+                        if (typeof new_api_base_url !== "string") {
+                            console.log("Invalid API base URL: not a string");
+                            break;
+                        }
+
+                        // if it ends with slash, remove it
+                        if (new_api_base_url.endsWith("/")) {
+                            new_api_base_url = new_api_base_url.slice(0, -1);
+                        }
+
+                        // validate the API base URL
+                        try {
+                            let url = new URL(new_api_base_url);
+
+                            // check domain is (eu).mailgun.net
+                            if (!url.hostname.endsWith(".mailgun.net")) {
+                                console.log("Invalid API base URL: domain is not (eu).mailgun.net");
+                                break;
+                            }
+
+                            // check last pathname is not messages
+                            if (url.pathname.endsWith("/messages")) {
+                                console.log("Invalid API base URL: should not end with /messages");
+                                break;
+                            }
+                        } catch (e) {
+                            console.log("Invalid API base URL: " + e?.message || e);
+                            break;
+                        }
+
+                        // update the form reference
+                        if (form_ref.mailgun_creds === undefined) {
+                            form_ref.mailgun_creds = {};
+                        }
+
+                        form_ref.mailgun_creds.api_base_url = new_api_base_url;
+                        break;
+                    case "2":
+                        let new_api_key = await async_question("Enter the new API base URL: ");
+
+                        if (typeof new_api_key !== "string") {
+                            console.log("Invalid API base URL: not a string");
+                            break;
+                        }
+
+                        // update the form reference
+                        if (form_ref.mailgun_creds === undefined) {
+                            form_ref.mailgun_creds = {};
+                        }
+
+                        form_ref.mailgun_creds.api_key = new_api_key;
+                        break;
+                    default:
+                        // exit
+                }
                 break;
             case "9":
                 console.log("Validating form reference...");
