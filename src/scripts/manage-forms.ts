@@ -67,6 +67,131 @@ const main = async () => {
 };
 
 
+const validation_funcs: { [key: string]: (value: any) => boolean } = {
+    form_url: (value: string) => {
+        // validate the URL
+        try {
+            new URL(value);
+        } catch (e) {
+            console.log("Invalid form URL: " + e?.message || e);
+            return false;
+        }
+
+        return true;
+    },
+    email_field_name: (value: string) => {
+        // validate the email field name
+        if (typeof value !== "string") {
+            console.log("Invalid email field name: not a string");
+            return false;
+        }
+
+        if (value.length === 0) {
+            console.log("Invalid email field name: empty string");
+            return false;
+        }
+
+        return true;
+    },
+    redirects: (value: { [key: string]: string }) => {
+        // validate the redirects
+        if (value instanceof Object !== true) {
+            console.log("Invalid redirects: not an object");
+            return false;
+        }
+
+        // check each redirect
+        for (const [name, redirect] of Object.entries(value)) {
+            if (name !== "verify" && name !== "submit") {
+                console.log("Invalid redirect name: " + name);
+                return false;
+            }
+
+            if (typeof redirect !== "string") {
+                console.log("Invalid redirect URL: " + redirect);
+                return false;
+            }
+
+            // validate the URL
+            try {
+                new URL(redirect);
+            } catch (e) {
+                console.log("Invalid redirect URL: " + e?.message || e);
+                return false;
+            }
+        }
+
+        return true;
+    },
+    from_address: (value: string) => {
+        // check from address is format user@domain.tld or Name <user@domain.tld>
+        if (typeof value !== "string") {
+            console.log("Invalid from address: not a string");
+            return false;
+        }
+
+        // check the from address is valid
+        if (!/^[^<]+<[^@]+@[^@]+>$/.test(value) && !/^[^@]+@[^@]+$/.test(value)) {
+            console.log("Invalid from address: not in email address format");
+            return false;
+        }
+
+        return true;
+    },
+    mailgun_creds: (value: { [key: string]: string }) => {
+        // check mailgun creds is an object
+        if (value instanceof Object !== true) {
+            console.log("Invalid mailgun creds: not an object");
+            return false;
+        }
+
+        // check each field
+        for (const [name, cred] of Object.entries(value)) {
+            if (name !== "api_base_url" && name !== "api_key") {
+                console.log("Invalid mailgun cred name: " + name);
+                return false;
+            }
+
+            validation_funcs["mailgun_creds." + name](cred);
+        }
+
+        return true;
+    },
+    "mailgun_creds.api_base_url": (value: string) => {
+        // check no trailing slash
+        if (value.endsWith("/")) {
+            console.log("Invalid API base URL: should not end with /");
+            return false;
+        }
+
+        // validate the URL
+        let url = new URL(value);
+
+        // check domain is (eu).mailgun.net
+        if (!url.hostname.endsWith(".mailgun.net")) {
+            console.log("Invalid API base URL: domain is not (eu).mailgun.net");
+            return false;
+        }
+
+        // check last pathname is not messages
+        if (url.pathname.endsWith("/messages")) {
+            console.log("Invalid API base URL: should not end with /messages");
+            return false;
+        }
+
+        return true;
+    },
+    "mailgun_creds.api_key": (value: string) => {
+        // check the api key is a string
+        if (typeof value !== "string") {
+            console.log("Invalid mailgun api_key: not a string");
+            return false;
+        }
+
+        return true;
+    },
+};
+
 const validate_form = (form_ref: { [key: string]: any }): boolean => {
     // check required field exists
     if (!form_ref.hasOwnProperty("form_url")) {
@@ -76,97 +201,11 @@ const validate_form = (form_ref: { [key: string]: any }): boolean => {
 
     // check each field against the schema
     for (const entry of Object.entries(form_ref)) {
-        switch (entry[0]) {
-            case "form_url":
-                // validate the URL
-                try {
-                    new URL(entry[1]);
-                } catch (e) {
-                    console.log("Invalid form URL: " + e?.message || e);
-                    return false;
-                }
-                break;
-            case "email_field_name":
-                // validate the email field name
-                if (typeof entry[1] !== "string") {
-                    console.log("Invalid email field name: not a string");
-                    return false;
-                }
-                break;
-            case "redirects":
-                // validate the redirects
-                if (entry[1] instanceof Object !== true) {
-                    console.log("Invalid redirects: not an object");
-                    return false;
-                }
-
-                // check each redirect
-                for (const [name, redirect] of Object.entries(entry[1])) {
-                    if (name !== "verify" && name !== "submit") {
-                        console.log("Invalid redirect name: " + name);
-                        return false;
-                    }
-
-                    if (typeof redirect !== "string") {
-                        console.log("Invalid redirect URL: " + redirect);
-                        return false;
-                    }
-
-                    // validate the URL
-                    try {
-                        new URL(redirect);
-                    } catch (e) {
-                        console.log("Invalid redirect URL: " + e?.message || e);
-                        return false;
-                    }
-                }
-
-                break;
-            case "from_address":
-                // check from address is format user@domain.tld or Name <user@domain.tld>
-                if (typeof entry[1] !== "string") {
-                    console.log("Invalid from address: not a string");
-                    return false;
-                }
-
-                // check the from address is valid
-                if (!/^[^<]+<[^@]+@[^@]+>$/.test(entry[1]) && !/^[^@]+@[^@]+$/.test(entry[1])) {
-                    console.log("Invalid from address: not in email address format");
-                    return false;
-                }
-
-                break;
-            case "mailgun_creds":
-                // check mailgun creds is an object
-                if (entry[1] instanceof Object !== true) {
-                    console.log("Invalid mailgun creds: not an object");
-                    return false;
-                }
-
-                // check each field
-                for (const [name, value] of Object.entries(entry[1])) {
-                    if (name !== "api_base_url" && name !== "api_key") {
-                        console.log("Invalid mailgun cred name: " + name);
-                        return false;
-                    }
-
-                    if (typeof value !== "string") {
-                        console.log("Invalid mailgun creds value: " + value);
-                        return false;
-                    }
-
-                    // if this is api_base_url, validate the URL
-                    if (name === "api_base_url") {
-                        try {
-                            new URL(value);
-                        } catch (e) {
-                            console.log("Invalid mailgun api_base_url: " + e?.message || e);
-                            return false;
-                        }
-                    }
-                }
-
-                break;
+        if (validation_funcs.hasOwnProperty(entry[0])) {
+            validation_funcs[entry[0]](entry[1]);
+        } else {
+            console.log("Invalid form: unknown field " + entry[0]);
+            return false;
         }
     }
 
@@ -249,10 +288,7 @@ const form_edit_flow = async (form_ref: FormReference) => {
                 const new_url = await async_question("Enter the new form URL: ");
 
                 // validate the URL
-                try {
-                    new URL(new_url);
-                } catch (e) {
-                    console.log("Invalid form URL: " + e?.message || e);
+                if(!validation_funcs.form_url(new_url)) {
                     break;
                 }
 
@@ -263,10 +299,7 @@ const form_edit_flow = async (form_ref: FormReference) => {
                 const new_email_field_name = await async_question("Enter the new email field name or enter nothing to undefine it: ");
 
                 // validate the email field name
-                if (typeof new_email_field_name !== "string") {
-                    console.log("Invalid email field name: not a string");
-                    break;
-                }
+                validation_funcs.email_field_name(new_email_field_name);
 
                 // update the form reference
                 if (new_email_field_name === "") {
@@ -305,8 +338,7 @@ const form_edit_flow = async (form_ref: FormReference) => {
                 }
 
                 // validate the from address
-                if (!/^[^<]+<[^@]+@[^@]+>$/.test(new_from_address) && !/^[^@]+@[^@]+$/.test(new_from_address)) {
-                    console.log("Invalid from address: not in email address format");
+                if (!validation_funcs.from_address(new_from_address)) {
                     break;
                 }
 
@@ -343,22 +375,7 @@ const form_edit_flow = async (form_ref: FormReference) => {
                         }
 
                         // validate the API base URL
-                        try {
-                            let url = new URL(new_api_base_url);
-
-                            // check domain is (eu).mailgun.net
-                            if (!url.hostname.endsWith(".mailgun.net")) {
-                                console.log("Invalid API base URL: domain is not (eu).mailgun.net");
-                                break;
-                            }
-
-                            // check last pathname is not messages
-                            if (url.pathname.endsWith("/messages")) {
-                                console.log("Invalid API base URL: should not end with /messages");
-                                break;
-                            }
-                        } catch (e) {
-                            console.log("Invalid API base URL: " + e?.message || e);
+                        if(!validation_funcs["mailgun_creds.api_base_url"](new_api_base_url)) {
                             break;
                         }
 
@@ -372,8 +389,8 @@ const form_edit_flow = async (form_ref: FormReference) => {
                     case "2":
                         let new_api_key = await async_question("Enter the new API base URL: ");
 
-                        if (typeof new_api_key !== "string") {
-                            console.log("Invalid API base URL: not a string");
+                        // validate the API key
+                        if(!validation_funcs["mailgun_creds.api_key"](new_api_key)) {
                             break;
                         }
 
@@ -385,8 +402,15 @@ const form_edit_flow = async (form_ref: FormReference) => {
                         form_ref.mailgun_creds.api_key = new_api_key;
                         break;
                     default:
-                        // exit
+                    // exit
                 }
+
+                // validate the mailgun creds
+                if (form_ref.mailgun_creds && !validation_funcs.mailgun_creds(form_ref.mailgun_creds)) {
+                    console.log("Invalid mailgun creds");
+                    break;
+                }
+                
                 break;
             case "9":
                 console.log("Validating form reference...");
