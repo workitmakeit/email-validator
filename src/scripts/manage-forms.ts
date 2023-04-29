@@ -288,7 +288,7 @@ const form_edit_flow = async (form_ref: FormReference) => {
                 const new_url = await async_question("Enter the new form URL: ");
 
                 // validate the URL
-                if(!validation_funcs.form_url(new_url)) {
+                if (!validation_funcs.form_url(new_url)) {
                     break;
                 }
 
@@ -298,15 +298,17 @@ const form_edit_flow = async (form_ref: FormReference) => {
             case "2":
                 const new_email_field_name = await async_question("Enter the new email field name or enter nothing to undefine it: ");
 
+                if (new_email_field_name === "") {
+                    delete form_ref.email_field_name;
+                    break;
+                }
+
                 // validate the email field name
                 validation_funcs.email_field_name(new_email_field_name);
 
                 // update the form reference
-                if (new_email_field_name === "") {
-                    delete form_ref.email_field_name;
-                } else {
-                    form_ref.email_field_name = new_email_field_name;
-                }
+                form_ref.email_field_name = new_email_field_name;
+
                 break;
             case "3":
                 console.log("Editing redirects...");
@@ -369,13 +371,22 @@ const form_edit_flow = async (form_ref: FormReference) => {
                             break;
                         }
 
+                        if (new_api_base_url === "") {
+                            if (form_ref.mailgun_creds === undefined) {
+                                break;
+                            }
+
+                            form_ref.mailgun_creds.api_base_url = undefined;
+                            break;
+                        }
+
                         // if it ends with slash, remove it
                         if (new_api_base_url.endsWith("/")) {
                             new_api_base_url = new_api_base_url.slice(0, -1);
                         }
 
                         // validate the API base URL
-                        if(!validation_funcs["mailgun_creds.api_base_url"](new_api_base_url)) {
+                        if (!validation_funcs["mailgun_creds.api_base_url"](new_api_base_url)) {
                             break;
                         }
 
@@ -387,10 +398,19 @@ const form_edit_flow = async (form_ref: FormReference) => {
                         form_ref.mailgun_creds.api_base_url = new_api_base_url;
                         break;
                     case "2":
-                        let new_api_key = await async_question("Enter the new API base URL: ");
+                        let new_api_key = await async_question("Enter the new API key: ");
+
+                        if (new_api_key === "") {
+                            if (form_ref.mailgun_creds === undefined) {
+                                break;
+                            }
+
+                            form_ref.mailgun_creds.api_key = undefined;
+                            break;
+                        }
 
                         // validate the API key
-                        if(!validation_funcs["mailgun_creds.api_key"](new_api_key)) {
+                        if (!validation_funcs["mailgun_creds.api_key"](new_api_key)) {
                             break;
                         }
 
@@ -410,7 +430,7 @@ const form_edit_flow = async (form_ref: FormReference) => {
                     console.log("Invalid mailgun creds");
                     break;
                 }
-                
+
                 break;
             case "9":
                 console.log("Validating form reference...");
