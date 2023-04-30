@@ -1,4 +1,4 @@
-import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError, LinkIDNotFoundError, InvalidFormField, EntityTooLargeError } from "../abstract_storage";
+import { StorageImplementation, FormReference, EmailTimeout, FormNotFoundError, EmailTimeoutShorterThanCurrentError, LinkIDInUseError, LinkIDNotFoundError, EntityTooLargeError } from "../abstract_storage";
 import { form_data_to_json, json_to_form_data } from "../utils";
 
 export interface NSObject {
