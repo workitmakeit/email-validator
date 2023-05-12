@@ -1,6 +1,6 @@
 {
   "name": "cf-email-validator-worker",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230404.0",
     "@types/uuid": "^9.0.1",
