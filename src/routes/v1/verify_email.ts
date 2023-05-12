@@ -1,8 +1,8 @@
-import type { Route } from "../types";
-import type { Env } from "../index";
+import type { Route } from "../../types";
+import type { Env } from "../../index";
 
-import { send_mail } from "../utils";
-import { EntityTooLargeError, FormNotFoundError, FormReference, StorageImplementation } from "../abstract_storage";
+import { send_mail } from "../../utils";
+import { EntityTooLargeError, FormNotFoundError, FormReference, StorageImplementation } from "../../abstract_storage";
 
 
 // TODO: decompose this function into smaller functions
@@ -98,10 +98,15 @@ const verify_email_route = async (req: Request, env: Env, storage_impl: StorageI
 
 	// generate the validation submission url
 	const submit_url = new URL(req.url);
-	submit_url.pathname = "/submit_form";
+	
+	// replace the last part of the path with the submit path
+	// NOTE: this truncates search params, but we don't need them anyway
+	const path_segments = submit_url.pathname.split("/");
+	path_segments[path_segments.length - 1] = "submit_form";
+
+	submit_url.pathname = path_segments.join("/");
 
 	submit_url.searchParams.set("link_id", link_id);
-
 
 	// get the mailgun creds (check form reference, then add whatever is missing from env, cannot be undefined)
 	const mailgun_creds = form_ref.mailgun_creds || {};

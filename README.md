@@ -56,7 +56,7 @@ STORAGE_IMPLEMENTATION = "kv"
 Example HTML form:
 
 ```html
-<form action="(worker url)/verify_email" method="post">
+<form action="(worker url)/v1/verify_email" method="post">
   <label for="email">Email address</label>
   <input name="Email" type="email">
 
@@ -74,7 +74,7 @@ Each of the hidden input values (except FormKey) can instead be defined in the f
 Example form where each value is defined in the form reference:
 
 ```html
-<form action="(worker url)/verify_email" method="post">
+<form action="(worker url)/v1/verify_email" method="post">
   <label for="email">Email address</label>
   <input name="Email" type="email">
 
@@ -87,7 +87,7 @@ Example form where each value is defined in the form reference:
 Example form where each value is defined in the form reference, and files are uploaded (note: not available on Formspree Free plan):
 
 ```html
-<form action="(worker url)/verify_email" method="post" enctype="multipart/form-data">
+<form action="(worker url)/v1/verify_email" method="post" enctype="multipart/form-data">
     <label for="email">Email address</label>
     <input name="Email" type="email">
 
@@ -100,7 +100,7 @@ Example form where each value is defined in the form reference, and files are up
 </form>
 ```
 
-7. Profit! (and optionally create Worker Routes to the worker for /verify_email and /submit_form*)
+7. Profit! (and optionally create Worker Routes to the worker for /v1/verify_email and /v1/submit_form*)
 
 ## C4 Diagram
 

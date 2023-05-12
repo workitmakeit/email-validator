@@ -1,11 +1,19 @@
 import { StorageImplementation } from "./abstract_storage";
 import * as storage_impls from "./storage_impl/@ALL";
 
-import * as _routes from "./routes/@ALL";
+import * as _v1_routes from "./routes/v1/@ALL";
 import { MethodString, Route, ValidMethods } from "./types";
 
-// convert _routes to a map of routes
-const routes: Map<string, Route> = new Map(Object.entries(_routes));
+
+// push each routing version into a map
+const routes = new Map<string, Map<string, Route>>();
+
+// push v1 and get reference
+const _v1_map = routes.set("v1", new Map()).get("v1")!;
+
+for (const [key, route] of Object.entries(_v1_routes)) {
+	_v1_map.set(key, route);
+}
 
 export interface Env {
 	FROM_ADDRESS: string;
@@ -65,16 +73,29 @@ export default {
 
 		// get pathname from url without slashes to resolve route
 		const url = new URL(req.url);
-		const key = url.pathname.replace(/^\/+|\/+$/g, "");
+
+		// get last 2 path segments
+		const path_segments = url.pathname.split("/");
+
+		// if there are less than 2 segments, return 404
+		if (path_segments.length < 2) {
+			return new Response("Route not found", { status: 404 });
+		}
+
+		const [version, key] = path_segments.slice(-2); // e.g. ["v1", "verify-email"]
 
 		// if they are requesting the root, show a status message
-		if (key === "") {
+		if (version === "" || key === "") {
 			return new Response("Worker OK", { status: 200 });
 		}
 
-		// get route from key
-		const route = routes.get(key);
+		// check version exists
+		if (!routes.has(version)) {
+			return new Response("Version not found", { status: 404 });
+		}
 
+		// get route by key
+		const route = routes.get(version)!.get(key);
 
 		// check route exists
 		if (!route) {
