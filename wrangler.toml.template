@@ -13,3 +13,6 @@ kv_namespaces = [
   { binding = "TIMEOUTS", id = "<id>", preview_id = "<id for use in dev mode>" },
   { binding = "LINKS", id = "<id>", preview_id = "<id for use in dev mode>" }
 ]
+
+[placement]
+mode = "smart"
