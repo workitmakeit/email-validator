@@ -82,7 +82,7 @@ export default {
 			return new Response("Route not found", { status: 404 });
 		}
 
-		const [version, key] = path_segments.slice(-2); // e.g. ["v1", "verify-email"]
+		const [version, key] = path_segments.slice(-2); // e.g. ["v1", "verify_email"]
 
 		// if they are requesting the root, show a status message
 		if (version === "" || key === "") {
